@@ -32,7 +32,7 @@
 
 1. 下载并编译插件，将编译后的插件移入插件文件夹 `plugins`。
 2. 将 `sound` 文件夹复制到服务器 `csgo/sound` 文件夹内。
-3. ~~ 将 `translations` 文件夹移入插件文件夹 `translations` ~~
+3. 将 `translations` 文件夹移入插件文件夹 `translations`
 4. 打开插件文件夹 `configs/databases.cfg` 加入如下信息：
 ```
 	"csgo"

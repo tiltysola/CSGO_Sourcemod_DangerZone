@@ -1,7 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <cstrike>
-// #include <colors>
+// #include "dangerzone/PingPosition.sp"
 
 /*************************************************
  *                                               *
@@ -90,11 +90,15 @@ Menu g_mRespawnMenu = null;
 // Give weapon system
 Menu g_mGiveWeaponMenu = null;
 
+// Kill system
+int g_iPlayerKillsCount[65];
+
 //////////////////////////////
 //     PLUGIN FORWARDS      //
 //////////////////////////////
 public void OnPluginStart () {
   YK_InitPlugin();
+  // OnPingPositionStart();
 }
 
 public void OnMapStart () {
@@ -215,7 +219,7 @@ public Action Command_Start (int client, int args) {
     if (!IsClientInGame(client) && !IsFakeClient(client))
         return Plugin_Handled;
     if (g_iGameStartedStatus == 0) {
-      g_iGameStartedStatus = 1;
+      g_iGameStartedStatus = 2;
     }
     return Plugin_Continue;
 }
@@ -285,9 +289,11 @@ public void Event_RoundStarted (Event event, const char[] name, bool dontBroadca
       ServerCommand("sv_dz_player_spawn_health %d", g_iSpawnHealth);
       YK_ActiveReadyTimer();
       YK_ActiveAnnounceTimer();
-    } else if (g_iGameStartedStatus == 1) {
+    } else if (g_iGameStartedStatus == 2) {
+      g_iGameStartedStatus = 1;
       for (int client = 1; client <= MaxClients; ++client) {
         if (IsClientInGame(client) && IsClientConnected(client)) {
+          g_iPlayerKillsCount[client] = 0;
           if (GetClientTeam(client) == 1) {
             g_iPlayerAliveStatus[client] = 2;
           } else {
@@ -303,8 +309,10 @@ public void Event_RoundStarted (Event event, const char[] name, bool dontBroadca
 
 public void Event_RoundEnd (Event event, const char[] name, bool dontBroadcast) {
   for (int client = 1; client <= MaxClients; ++client) {
-    if (IsPlayerAlive(client) && !IsFakeClient(client)) {
-      DB_AddWinToPlayer(client);
+    if (IsClientInGame(client)) {
+      if (IsPlayerAlive(client) && !IsFakeClient(client)) {
+        DB_AddWinToPlayer(client);
+      }
     }
   }
 	if(g_hBroadcastTimer != null)
@@ -354,10 +362,17 @@ public void Event_PlayerDeath (Event event, const char[] name, bool dontBroadcas
   if (g_iGameStartedStatus == 1) {
     int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     int victim = GetClientOfUserId(GetEventInt(event, "userid"));
+    char attackerName[255];
+    GetClientName(attacker, attackerName, 255);
     if (attacker != victim && attacker != 0) {
       DB_AddKillToPlayer(attacker);
     }
     DB_AddDeathToPlayer(victim);
+    g_iPlayerKillsCount[attacker]++;
+    if (g_iPlayerKillsCount[attacker] >= 3) {
+      for (int time = 0; time < g_iPlayerKillsCount[attacker]; time++)
+        PrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01已经杀了\x02%d\x01个人了，快去终结他吧！", attackerName, g_iPlayerKillsCount[attacker]);
+    }
     for (int client = 1; client <= MaxClients; ++client) {
       if (IsClientInGame(client) && IsClientConnected(client) && !IsFakeClient(client)) {
         if (client == victim) {
@@ -449,7 +464,7 @@ public void YK_BroadcastDangerZoneInfoToAll () {
       if (strcmp(clientName, "GOTV") != 0) {
         printIdPrefix++;
         if (IsPlayerAlive(client)) {
-          PrintToChatAll(" \x04%d. %s (存活)", printIdPrefix, clientName);
+          PrintToChatAll(" \x04%d. %s (存活) 剩余：%dhp", printIdPrefix, clientName, GetClientHealth(client));
         } else if (g_iPlayerAliveStatus[client] == 1) {
           PrintToChatAll(" \x02%d. %s (死亡)", printIdPrefix, clientName);
         } else if (g_iPlayerAliveStatus[client] == 2) {
@@ -582,7 +597,7 @@ public Action Timer_ReadyTimer (Handle timer) {
       }
     }
     if ((unreadyPlayersCount == 0 && readyPlayersCount >= 2) || (readyPlayersCount >= 6)) {
-      g_iGameStartedStatus = 1;
+      g_iGameStartedStatus = 2;
     }
   } else {
     YK_StartGame(readyPlayersCount + unreadyPlayersCount);
@@ -628,7 +643,7 @@ public int Menu_DzAdminMenu (Menu menu, MenuAction action, int param1, int param
         g_mGiveWeaponMenu.Display(param1, MENU_TIME_FOREVER);
       } else if (!strcmp(info, "start")) {
         if (g_iGameStartedStatus == 0) {
-          g_iGameStartedStatus = 1;
+          g_iGameStartedStatus = 2;
         }
       } else if (!strcmp(info, "end")) {
         if (g_iGameStartedStatus == 1) {
