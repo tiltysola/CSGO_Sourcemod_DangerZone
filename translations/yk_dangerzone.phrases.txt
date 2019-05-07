@@ -173,21 +173,63 @@
     "hint unready"
     {
       "#format"	"{1:d},{2:d}"
-      "en" " {default}{1} / {2} players are ready.\nPlease type {green}!ready {default} to be ready."
-      "chi" " {default}{1} / {2} 名玩家已准备\n请输入 {green}!ready {default}准备。"
+      "en" " {1} / {2} players are ready.\nPlease type <span style='color:green;'>!ready</span> to be ready."
+      "chi" " {1} / {2} 名玩家已准备\n请输入 <span style='color:green;'>!ready</span> 准备。"
     }
 
     "hint ready 1"
     {
       "#format"	"{1:d},{2:d}"
-      "en" " {default}{1} / {2} players are ready.\nGame start needs at least 6 players."
-      "chi" " {default}{1} / {2} 名玩家已准备\n{green}至少需要6名玩家才能开始游戏。"
+      "en" " {1} / {2} players are ready.\nGame start needs at least 6 players."
+      "chi" " {1} / {2} 名玩家已准备\n至少需要6名玩家才能开始游戏。"
     }
 
     "hint ready 2"
     {
       "#format"	"{1:d},{2:d},{3:d}"
-      "en" " {default}{1} / {2} players are ready.\nGame start needs other {3} players to be ready."
-      "chi" " {default}{1} / {2} 名玩家已准备\n{green}剩余 {3} 名玩家准备后游戏开始。"
+      "en" " {1} / {2} players are ready.\nGame start needs other {3} players to be ready."
+      "chi" " {1} / {2} 名玩家已准备\n剩余 {3} 名玩家准备后游戏开始。"
+    }
+
+    "hurt others"
+    {
+      "#format"	"{1:s},{2:s},{3:s},{4:d}"
+      "en" " {olive}{1}{default} use {blue}{2}{default} to {olive}{3}{default} damage {red}{4}{default}hp."
+      "chi" " {olive}{1}{default}使用{blue}{2}{default}对{olive}{3}{default}造成了{red}{4}{default}点伤害。"
+    }
+
+    "hurt self"
+    {
+      "#format"	"{1:s},{2:d}"
+      "en" " {olive}{1}{default} damaged {red}{2} {default}hp to himself."
+      "chi" " {olive}{1}{default}对自己造成了{red}{2}{default}点伤害。"
+    }
+
+    "flash others"
+    {
+      "#format"	"{1:s},{2:s},{3:.1f}"
+      "en" " {olive}{1}{default} use {blue}flashingbang{default} to flash {olive}{3}{default}'s eyes {red}{3}{default}s."
+      "chi" " {olive}{1}{default}使用{blue}闪光弹{default}闪瞎了{olive}{2}{default}的狗眼{red}{3}{default}秒。"
+    }
+
+    "flash self"
+    {
+      "#format"	"{1:s},{2:.1f}"
+      "en" " {olive}{1}{default} flashed himself {red}{2} {default}s."
+      "chi" " {olive}{1}{default}闪瞎了自己{red}{2}{default}秒。"
+    }
+
+    "multi kill"
+    {
+      "#format"	"{1:s},{2:d}"
+      "en" " {olive}{1}{red} has slained {purple}{2} {red} enemy, who can come and kill him!!!"
+      "chi" " {olive}{1}{red}已经击败了{purple}{2}{red}个人了，拜托谁去杀了他吧！"
+    }
+
+    "interact"
+    {
+      "#format"	"{1:s},{2:s}"
+      "en" " {olive}{1}{default} interact with {olive}{2}"
+      "chi" " {olive}{1}{default}与{olive}{2}{default}进行了交互。"
     }
 }
