@@ -1,7 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <cstrike>
-// #include "dangerzone/PingPosition.sp"
+#include "dangerzone/PingPosition.sp"
 
 /*************************************************
  *                                               *
@@ -98,7 +98,7 @@ int g_iPlayerKillsCount[65];
 //////////////////////////////
 public void OnPluginStart () {
   YK_InitPlugin();
-  // OnPingPositionStart();
+  OnPingPositionStart();
 }
 
 public void OnMapStart () {
@@ -110,7 +110,7 @@ public void OnMapStart () {
 public void OnClientPutInServer (int client) {
   char clientName[255];
   GetClientName(client, clientName, 255);
-  PrintToChatAll(" \x04[爱因兹贝伦] \x01玩家\x09%s\x01加入了游戏！", clientName);
+  tPrintToChatAll(" %t %t", "prefix", "join game", clientName);
   DB_InitUser(client);
   if (g_iGameStartedStatus == 1) {
     g_iPlayerAliveStatus[client] = 2;
@@ -120,13 +120,13 @@ public void OnClientPutInServer (int client) {
 public void OnClientDisconnect (int client) {
   char clientName[255];
   GetClientName(client, clientName, 255);
-  PrintToChatAll(" \x04[爱因兹贝伦] \x01玩家\x09%s\x01离开了游戏！", clientName);
+  tPrintToChatAll(" %t %t", "prefix", "left game", clientName);
 }
 
 public void YK_InitPlugin () {
   PrintToServer("Initializing plugin: %s", PLUGIN_NAME);
   // ANY FUNCTIONS THAT SHOULD BE IN OnPluginStart
-  LoadTranslations("yk_dangerzone_core.phrases");
+  LoadTranslations("yk_dangerzone.phrases");
   YK_DatabaseInit();
   YK_WelcomeMessage();
 	YK_InitConvars();
@@ -153,7 +153,7 @@ public void ConVarChanged (ConVar convar, const char[] oldValue, const char[] ne
 			g_iBroadcastInterval = 180;
 		else
 			g_iBroadcastInterval = StringToInt(newValue);
-    PrintToChatAll(" \x04[爱因兹贝伦] \x01播报时间间隔已被管理员设置为：%ds", g_iBroadcastInterval);
+    tPrintToChatAll(" %t %t", "prefix", "broadcast interval setting", g_iBroadcastInterval);
 	}
 	if (convar == g_hMaxTeamCount) {
 		if (StringToInt(newValue) < 1.0)
@@ -162,7 +162,7 @@ public void ConVarChanged (ConVar convar, const char[] oldValue, const char[] ne
 			g_iMaxTeamCount = 3;
 		else
 			g_iMaxTeamCount = StringToInt(newValue);
-    PrintToChatAll(" \x04[爱因兹贝伦] \x01队伍人数上限已被管理员设置为：%d", g_iMaxTeamCount);
+    tPrintToChatAll(" %t %t", "prefix", "team count setting", g_iMaxTeamCount);
 	}
 	if (convar == g_hSpawnHealth) {
 		if (StringToInt(newValue) < 1.0)
@@ -171,7 +171,7 @@ public void ConVarChanged (ConVar convar, const char[] oldValue, const char[] ne
 			g_iSpawnHealth = 3;
 		else
 			g_iSpawnHealth = StringToInt(newValue);
-    PrintToChatAll(" \x04[爱因兹贝伦] \x01初始血量已被管理员设置为：%d", g_iSpawnHealth);
+    tPrintToChatAll(" %t %t", "prefix", "spawn health setting", g_iSpawnHealth);
 	}
 	if (convar == g_hMaxHealth) {
 		if (StringToInt(newValue) < 1.0)
@@ -180,7 +180,7 @@ public void ConVarChanged (ConVar convar, const char[] oldValue, const char[] ne
 			g_iMaxHealth = 3;
 		else
 			g_iMaxHealth = StringToInt(newValue);
-    PrintToChatAll(" \x04[爱因兹贝伦] \x01血量上限已被管理员设置为：%d", g_iMaxHealth);
+    tPrintToChatAll(" %t %t", "prefix", "max health setting", g_iMaxHealth);
 	}
 }
 
@@ -193,9 +193,9 @@ public Action Command_Ready (int client, int args) {
     if (g_iGameStartedStatus == 0) {
       if (g_iPlayerReadyStatus[client] == 0) {
         g_iPlayerReadyStatus[client] = 1;
-        PrintToChat(client, " \x04[爱因兹贝伦] \x01准备成功，请等待其他玩家准备！");
+        tPrintToChatAll(" %t %t", "prefix", "ready");
       } else {
-        PrintToChat(client, " \x04[爱因兹贝伦] \x01您已准备，可使用 !unready 取消准备！");
+        tPrintToChatAll(" %t %t", "prefix", "retype ready");
       }
     }
     return Plugin_Continue;
@@ -207,9 +207,9 @@ public Action Command_Unready (int client, int args) {
     if (g_iGameStartedStatus == 0) {
       if (g_iPlayerReadyStatus[client] == 1) {
         g_iPlayerReadyStatus[client] = 0;
-        PrintToChat(client, " \x04[爱因兹贝伦] \x01取消准备成功，请尽快重新准备！");
+        tPrintToChatAll(" %t %t", "prefix", "unready");
       } else {
-        PrintToChat(client, " \x04[爱因兹贝伦] \x01您尚未准备，可使用 !ready 准备！");
+        tPrintToChatAll(" %t %t", "prefix", "retype unready");
       }
     }
     return Plugin_Continue;
@@ -237,7 +237,7 @@ public Action Command_End (int client, int args) {
         return Plugin_Handled;
     if (g_iGameStartedStatus == 1) {
       g_iGameStartedStatus = 0;
-      PrintToChatAll(" \x04[爱因兹贝伦] \x01比赛被强制结束。");
+      tPrintToChatAll(" %t %t", "prefix", "admin end match");
       YK_EndGame();
     }
     return Plugin_Continue;
@@ -247,7 +247,7 @@ public Action Command_ForceEnd (int client, int args) {
     if (!IsClientInGame(client) && !IsFakeClient(client))
       return Plugin_Handled;
     g_iGameStartedStatus = 0;
-    PrintToChatAll(" \x04[爱因兹贝伦] \x01比赛被强制结束。");
+    tPrintToChatAll(" %t %t", "prefix", "admin end match");
     YK_EndGame();
     return Plugin_Continue;
 }
@@ -257,7 +257,7 @@ public Action Command_RespawnMenu (int client, int args) {
       return Plugin_Handled;
     g_mRespawnMenu = BuildRespawnMenu();
     if (g_mRespawnMenu == null) {
-      PrintToChat(client, " \x04[爱因兹贝伦] \x01没有找到任何去世的玩家！");
+      tPrintToChatAll(" %t %t", "prefix", "respawn player not found");
       return Plugin_Handled;
     }
     g_mRespawnMenu.Display(client, MENU_TIME_FOREVER);
@@ -277,7 +277,7 @@ public Action Command_GiveWeaponMenu (int client, int args) {
 //////////////////////////////
 public void Event_RoundStarted (Event event, const char[] name, bool dontBroadcast) {
   if (YK_IsMapDangerZone() && g_bPluginEnable) {
-    PrintToChatAll(" \x04[爱因兹贝伦] \x01头号行动社区插件已启用。");
+    tPrintToChatAll(" %t %t", "prefix", "plugin enabled");
     if (g_bPluginPreprocess == false) {
       g_bPluginPreprocess = true;
       YK_EndGame();
@@ -303,18 +303,21 @@ public void Event_RoundStarted (Event event, const char[] name, bool dontBroadca
       }
     }
   } else {
-    PrintToChatAll(" \x04[爱因兹贝伦] \x02头号行动社区插件已禁用。");
+    tPrintToChatAll(" %t %t", "prefix", "plugin disabled");
   }
 }
 
 public void Event_RoundEnd (Event event, const char[] name, bool dontBroadcast) {
-  for (int client = 1; client <= MaxClients; ++client) {
-    if (IsClientInGame(client)) {
-      if (IsPlayerAlive(client) && !IsFakeClient(client)) {
-        DB_AddWinToPlayer(client);
+  if (g_iGameStartedStatus == 1) {
+    for (int client = 1; client <= MaxClients; ++client) {
+      if (IsClientInGame(client)) {
+        if (IsPlayerAlive(client) && !IsFakeClient(client)) {
+          DB_AddWinToPlayer(client);
+        }
       }
     }
   }
+  g_iGameStartedStatus = 0;
 	if(g_hBroadcastTimer != null)
 		KillTimer(g_hBroadcastTimer);
 	g_hBroadcastTimer = null;
@@ -322,7 +325,6 @@ public void Event_RoundEnd (Event event, const char[] name, bool dontBroadcast) 
 		KillTimer(g_hSpecTimer);
 	g_hSpecTimer = null;
 	g_iBroadcastTimeout = -1;
-  g_iGameStartedStatus = 0;
   if (g_mRespawnMenu != null)
     delete g_mRespawnMenu;
   if (g_mGiveWeaponMenu != null)
@@ -338,9 +340,9 @@ public void Event_PlayerHurt (Event event, const char[] name, bool dontBroadcast
   GetClientName(victim, victimName, 255);
   GetEventString(event, "weapon", weaponName, 255);
   if (attacker != 0 && attacker != victim) {
-    PrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01使用\x0C%s\x01对\x09%s\x01造成了\x02%d\x01点伤害。", attackerName, weaponName, victimName, damage);
+    tPrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01使用\x0C%s\x01对\x09%s\x01造成了\x02%d\x01点伤害。", attackerName, weaponName, victimName, damage);
   } else {
-    PrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01对自己造成了\x02%d\x01点伤害。", victimName, damage);
+    tPrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01对自己造成了\x02%d\x01点伤害。", victimName, damage);
   }
 }
 
@@ -352,9 +354,9 @@ public void Event_PlayerBlind (Event event, const char[] name, bool dontBroadcas
   GetClientName(attacker, attackerName, 255);
   GetClientName(victim, victimName, 255);
   if (attacker != victim) {
-    PrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01使用\x09闪光弹\x01闪瞎了\x09%s\x01的狗眼\x02%.1f\x01秒。", attackerName, victimName, duration);
+    tPrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01使用\x09闪光弹\x01闪瞎了\x09%s\x01的狗眼\x02%.1f\x01秒。", attackerName, victimName, duration);
   } else {
-    PrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01闪瞎了自己的狗眼\x02%.1f\x01秒。", victimName, duration);
+    tPrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01闪瞎了自己的狗眼\x02%.1f\x01秒。", victimName, duration);
   }
 }
 
@@ -371,7 +373,7 @@ public void Event_PlayerDeath (Event event, const char[] name, bool dontBroadcas
     g_iPlayerKillsCount[attacker]++;
     if (g_iPlayerKillsCount[attacker] >= 3) {
       for (int time = 0; time < g_iPlayerKillsCount[attacker]; time++)
-        PrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01已经杀了\x02%d\x01个人了，快去终结他吧！", attackerName, g_iPlayerKillsCount[attacker]);
+        tPrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01已经杀了\x02%d\x01个人了，快去终结他吧！", attackerName, g_iPlayerKillsCount[attacker]);
     }
     for (int client = 1; client <= MaxClients; ++client) {
       if (IsClientInGame(client) && IsClientConnected(client) && !IsFakeClient(client)) {
@@ -392,7 +394,7 @@ public void Event_DzInteraction (Event event, const char[] name, bool dontBroadc
   char caseType[255], userName[255];
   GetEventString(event, "type", caseType, 255);
   GetClientName(userid, userName, 255);
-  PrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01与\x09%s\x01进行了交互。", userName, caseType);
+  tPrintToChatAll(" \x04[爱因兹贝伦] \x09%s\x01与\x09%s\x01进行了交互。", userName, caseType);
 }
 
 //////////////////////////////
@@ -456,7 +458,7 @@ public bool YK_IsMapBlackSite () {
 
 public void YK_BroadcastDangerZoneInfoToAll () {
   int printIdPrefix = 0;
-	PrintToChatAll(" \x04[爱因兹贝伦] \x01当前玩家存活情况：");
+	tPrintToChatAll(" %t %t", "prefix", "player alive title");
 	for (int client = 1; client <= MaxClients; ++client) {
 		if (IsClientInGame(client)) {
 			char clientName[255];
@@ -464,11 +466,11 @@ public void YK_BroadcastDangerZoneInfoToAll () {
       if (strcmp(clientName, "GOTV") != 0) {
         printIdPrefix++;
         if (IsPlayerAlive(client)) {
-          PrintToChatAll(" \x04%d. %s (存活) 剩余：%dhp", printIdPrefix, clientName, GetClientHealth(client));
+          tPrintToChatAll(" \x04%d. %s (Alive) Left: %dhp", printIdPrefix, clientName, GetClientHealth(client));
         } else if (g_iPlayerAliveStatus[client] == 1) {
-          PrintToChatAll(" \x02%d. %s (死亡)", printIdPrefix, clientName);
+          tPrintToChatAll(" \x02%d. %s (Dead)", printIdPrefix, clientName);
         } else if (g_iPlayerAliveStatus[client] == 2) {
-          PrintToChatAll(" \x0E%d. %s (观察者)", printIdPrefix, clientName);
+          tPrintToChatAll(" \x0E%d. %s (Spec)", printIdPrefix, clientName);
         }
       }
 		}
@@ -476,9 +478,9 @@ public void YK_BroadcastDangerZoneInfoToAll () {
 }
 
 public void YK_BroadcastDangerZoneServerInfoToAll () {
-  PrintToChatAll(" \x04[爱因兹贝伦] \x0E随机组队队伍成员数：%d", g_iMaxTeamCount);
-  PrintToChatAll(" \x04[爱因兹贝伦] \x0E游戏开始后的初始血量：%d", g_iSpawnHealth);
-  PrintToChatAll(" \x04[爱因兹贝伦] \x0E游戏开始后的最大血量：%d", g_iMaxHealth);
+  tPrintToChatAll(" %t %t", "prefix", "broadcast team count", g_iMaxTeamCount);
+  tPrintToChatAll(" %t %t", "prefix", "broadcast spawn health", g_iSpawnHealth);
+  tPrintToChatAll(" %t %t", "prefix", "broadcast max health", g_iMaxHealth);
 }
 
 public void YK_MoveAllPlayersInGame () {
@@ -498,9 +500,9 @@ public void YK_MoveAllPlayersInGame () {
 
 public void YK_StartGame (int readyPlayersCount) {
   if (readyPlayersCount != 0) {
-    PrintToChatAll(" \x04[爱因兹贝伦] \x0E游戏将在10秒后开始，当前玩家数：\x04%d\x0E名。", readyPlayersCount);
+    tPrintToChatAll(" %t %t", "prefix", "game start with players", readyPlayersCount);
   } else {
-    PrintToChatAll(" \x04[爱因兹贝伦] \x0E游戏将在10秒后开始。");
+    tPrintToChatAll(" %t %t", "prefix", "game start");
   }
   YK_BroadcastDangerZoneServerInfoToAll();
   ServerCommand("mp_warmuptime 10");
@@ -585,13 +587,22 @@ public Action Timer_ReadyTimer (Handle timer) {
     for (int client = 1; client <= MaxClients; ++client) {
       if (IsClientInGame(client) && IsClientConnected(client) && !IsFakeClient(client)) {
         if (g_iPlayerReadyStatus[client] == 0) {
-          PrintHintText(client, "%d / %d 名玩家已准备\n请输入 \x04!ready \x01准备。", readyPlayersCount, readyPlayersCount + unreadyPlayersCount);
+          char szBuffer[256];
+          FormatEx(szBuffer, 255, "%t", "hint unready", readyPlayersCount, readyPlayersCount + unreadyPlayersCount);
+          ReplaceColorsCode(szBuffer, 256);
+          PrintHintText(client, szBuffer);
         } else {
           if (readyPlayersCount + unreadyPlayersCount < 6){
-            PrintHintText(client, "%d / %d 名玩家已准备\n\x04至少需要6名玩家才能开始游戏。", readyPlayersCount, readyPlayersCount + unreadyPlayersCount);
+            char szBuffer[256];
+            FormatEx(szBuffer, 255, "%t", "hint ready 1", readyPlayersCount, readyPlayersCount + unreadyPlayersCount);
+            ReplaceColorsCode(szBuffer, 256);
+            PrintHintText(client, szBuffer);
           } else {
             int restPlayersCount = ((6 - readyPlayersCount) > 0) ? (6 - readyPlayersCount) : 0;
-            PrintHintText(client, "%d / %d 名玩家已准备\n\x04剩余 %d 名玩家准备后游戏开始。", readyPlayersCount, readyPlayersCount + unreadyPlayersCount, restPlayersCount);
+            char szBuffer[256];
+            FormatEx(szBuffer, 255, "%t", "hint ready 2", readyPlayersCount, readyPlayersCount + unreadyPlayersCount, restPlayersCount);
+            ReplaceColorsCode(szBuffer, 256);
+            PrintHintText(client, szBuffer);
           }
         }
       }
@@ -648,12 +659,12 @@ public int Menu_DzAdminMenu (Menu menu, MenuAction action, int param1, int param
       } else if (!strcmp(info, "end")) {
         if (g_iGameStartedStatus == 1) {
           g_iGameStartedStatus = 0;
-          PrintToChatAll(" \x04[爱因兹贝伦] \x01比赛被强制结束。");
+          tPrintToChatAll(" %t %t", "prefix", "admin end match", g_iMaxTeamCount);
           YK_EndGame();
         }
       } else if (!strcmp(info, "fend")) {
         g_iGameStartedStatus = 0;
-        PrintToChatAll(" \x04[爱因兹贝伦] \x01比赛被强制结束。");
+        tPrintToChatAll(" %t %t", "prefix", "admin end match", g_iMaxTeamCount);
         YK_EndGame();
       }
     }
@@ -1010,13 +1021,13 @@ public void DB_AddWinToPlayer (int client) {
 //         WELCOME          //
 //////////////////////////////
 public void YK_WelcomeMessage () {
-  PrintToChatAll(" \x04*************************************************");
-  PrintToChatAll(" \x04*    Youmu Konpaku DangerZone Core Plugin       *");
-  PrintToChatAll(" \x04*                               for sourcemod   *");
-  PrintToChatAll(" \x04*    Site:  https://www.youmukonpaku.cn/        *");
-  PrintToChatAll(" \x04*    QQ:    69302630                            *");
-  PrintToChatAll(" \x04*    Email: kanade@acgme.cn                     *");
-  PrintToChatAll(" \x04*************************************************");
+  tPrintToChatAll("%t", "welcome line 1");
+  tPrintToChatAll("%t", "welcome line 2");
+  tPrintToChatAll("%t", "welcome line 3");
+  tPrintToChatAll("%t", "welcome line 4");
+  tPrintToChatAll("%t", "welcome line 5");
+  tPrintToChatAll("%t", "welcome line 6");
+  tPrintToChatAll("%t", "welcome line 1");
 }
 
 //////////////////////////////
@@ -1029,4 +1040,68 @@ public void YK_PrecacheSounds () {
   PrecacheSound("einzbern/229875-a39ebdcd-20df-417c-b3e9-ac254dc1a701.mp3"); // an enemy has been slain
   PrecacheSound("einzbern/229875-925e9c0e-8f02-4e27-bd84-5f0704012a51.mp3");  // you has slain an enemy
   PrecacheSound("einzbern/229875-e1721e64-3864-4528-b495-7a77efc7be1c.mp3");  // you has been slain
+}
+
+//////////////////////////////
+//          STOCKS          //
+//////////////////////////////
+stock void tPrintToChat (int client, const char[] szMessage, any ...) {
+  char szBuffer[256];
+  VFormat(szBuffer, 256, szMessage, 3);
+  ReplaceColorsCode(szBuffer, 256);
+  Format(szBuffer, 256, "%s", szBuffer);
+  Protobuf SayText2 = view_as<Protobuf>(StartMessageOne("SayText2", client, USERMSG_RELIABLE|USERMSG_BLOCKHOOKS));
+  if (SayText2 == null) {
+    LogError("StartMessageOne -> SayText2 is null");
+    return;
+  }
+  SayText2.SetInt("ent_idx", 0);
+  SayText2.SetBool("chat", true);
+  SayText2.SetString("msg_name", szBuffer);
+  SayText2.AddString("params", "");
+  SayText2.AddString("params", "");
+  SayText2.AddString("params", "");
+  SayText2.AddString("params", "");
+  EndMessage();
+}
+
+stock void tPrintToChatAll (const char[] szMessage, any ...) {
+  char szBuffer[256];
+  for (int client = 1; client <= MaxClients; client++) {
+    if (IsClientInGame(client) && !IsFakeClient(client)) {
+      SetGlobalTransTarget(client);
+      VFormat(szBuffer, 256, szMessage, 2);
+      ReplaceColorsCode(szBuffer, 256);
+      tPrintToChat(client, "%s", szBuffer);
+    }
+  }
+}
+
+stock void ReplaceColorsCode (char[] message, int maxLen, int team = 0) {
+    ReplaceString(message, maxLen, "{normal}", "\x01", false);
+    ReplaceString(message, maxLen, "{default}", "\x01", false);
+    ReplaceString(message, maxLen, "{white}", "\x01", false);
+    ReplaceString(message, maxLen, "{darkred}", "\x02", false);
+    switch (team) {
+        case 3 : ReplaceString(message, maxLen, "{teamcolor}", "\x0B", false);
+        case 2 : ReplaceString(message, maxLen, "{teamcolor}", "\x05", false);
+        default: ReplaceString(message, maxLen, "{teamcolor}", "\x01", false);
+    }
+    ReplaceString(message, maxLen, "{pink}", "\x03", false);
+    ReplaceString(message, maxLen, "{green}", "\x04", false);
+    ReplaceString(message, maxLen, "{highlight}", "\x04", false);
+    ReplaceString(message, maxLen, "{yellow}", "\x05", false);
+    ReplaceString(message, maxLen, "{lightgreen}", "\x05", false);
+    ReplaceString(message, maxLen, "{lime}", "\x06", false);
+    ReplaceString(message, maxLen, "{lightred}", "\x07", false);
+    ReplaceString(message, maxLen, "{red}", "\x07", false);
+    ReplaceString(message, maxLen, "{gray}", "\x08", false);
+    ReplaceString(message, maxLen, "{grey}", "\x08", false);
+    ReplaceString(message, maxLen, "{olive}", "\x09", false);
+    ReplaceString(message, maxLen, "{orange}", "\x10", false);
+    ReplaceString(message, maxLen, "{silver}", "\x0A", false);
+    ReplaceString(message, maxLen, "{lightblue}", "\x0B", false);
+    ReplaceString(message, maxLen, "{blue}", "\x0C", false);
+    ReplaceString(message, maxLen, "{purple}", "\x0E", false);
+    ReplaceString(message, maxLen, "{darkorange}", "\x0F", false);
 }

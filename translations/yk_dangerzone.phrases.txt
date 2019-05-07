@@ -1,0 +1,193 @@
+"Phrases"
+{
+    "welcome line 1"
+    {
+        "en" " {green}*************************************************"
+        "chi" " {green}*************************************************"
+    }
+    
+    "welcome line 2"
+    {
+        "en" " {green}*    Youmu Konpaku DangerZone Core Plugin       *"
+        "chi" " {green}*    Youmu Konpaku DangerZone Core Plugin       *"
+    }
+    
+    "welcome line 3"
+    {
+        "en" " {green}*                               for sourcemod   *"
+        "chi" " {green}*                               for sourcemod   *"
+    }
+    
+    "welcome line 4"
+    {
+        "en" " {green}*    Site:  https://www.youmukonpaku.cn/        *"
+        "chi" " {green}*    Site:  https://www.youmukonpaku.cn/        *"
+    }
+    
+    "welcome line 5"
+    {
+        "en" " {green}*    QQ:    69302630                            *"
+        "chi" " {green}*    QQ:    69302630                            *"
+    }
+
+    "welcome line 6"
+    {
+        "en" " {green}*    Email: kanade@acgme.cn                     *"
+        "chi" " {green}*    Email: kanade@acgme.cn                     *"
+    }
+
+    "prefix"
+    {
+      "en" " {green}[Einzbern] "
+      "chi" " {green}[爱因兹贝伦] "
+    }
+
+    "plugin enabled"
+    {
+      "en" " {default}DangerZone Community Plugins has been enabled."
+      "chi" " {default}头号特训社区插件已启用。"
+    }
+
+    "plugin disabled"
+    {
+      "en" " {default}DangerZone Community Plugins has been disabled."
+      "chi" " {default}头号特训社区插件已禁用。"
+    }
+
+    "join game"
+    {
+      "en" " {default}Player {olive}%s {default}joined game."
+      "chi" " {default}玩家{olive}%s{default}加入了游戏！"
+    }
+
+    "left game"
+    {
+      "en" " {default}Player {olive}%s {default}left game."
+      "chi" " {default}玩家{olive}%s{default}离开了游戏！"
+    }
+
+    "broadcast interval setting"
+    {
+      "#format"	"{1:d}"
+      "en" " {default}Broadcast interval has been set to: {1}s"
+      "chi" " {default}播报时间间隔已被管理员设置为：{1}s"
+    }
+
+    "teamcount setting"
+    {
+      "#format"	"{1:d}"
+      "en" " {default}Team players count max has been set to: {1}"
+      "chi" " {default}队伍人数上限已被管理员设置为：{1}"
+    }
+
+    "spawn health setting"
+    {
+      "#format"	"{1:d}"
+      "en" " {default}Spawn health has been set to: {1}"
+      "chi" " {default}初始血量已被管理员设置为：{1}"
+    }
+
+    "max health setting"
+    {
+      "#format"	"{1:d}"
+      "en" " {default}Max health has been set to: {1}"
+      "chi" " {default}血量上限已被管理员设置为：{1}"
+    }
+
+    "ready"
+    {
+      "en" " {default}You are ready, please wait others."
+      "chi" " {default}准备成功，请等待其他玩家准备！"
+    }
+
+    "retype ready"
+    {
+      "en" " {default}You are ready, please type !unready to be unready."
+      "chi" " {default}您已准备，可使用 !unready 取消准备！"
+    }
+
+    "unready"
+    {
+      "en" " {default}You are not ready now, please be ready soon."
+      "chi" " {default}取消准备成功，请尽快重新准备！"
+    }
+
+    "retype unready"
+    {
+      "en" " {default}You are not ready, please type !ready to be ready."
+      "chi" " {default}您尚未准备，可使用 !ready 准备！"
+    }
+
+    "admin end match"
+    {
+      "en" " {default}Match has been forced to end."
+      "chi" " {default}比赛被强制结束！"
+    }
+
+    "respawn player not found"
+    {
+      "en" " {default}No player died this time."
+      "chi" " {default}没有找到任何死亡的玩家。"
+    }
+
+    "player alive title"
+    {
+      "en" " {default}Players status:"
+      "chi" " {default}当前玩家存活情况："
+    }
+
+    "broadcast team count"
+    {
+      "#format"	"{1:d}"
+      "en" " {default}Team players count:{1}"
+      "chi" " {default}随机组队队伍成员数：{1}"
+    }
+
+    "broadcast spawn health"
+    {
+      "#format"	"{1:d}"
+      "en" " {default}Spawn health after game began:{1}"
+      "chi" " {default}游戏开始后的初始血量：{1}"
+    }
+
+    "broadcast max health"
+    {
+      "#format"	"{1:d}"
+      "en" " {default}Max health after game began:{1}"
+      "chi" " {default}游戏开始后的最大血量：{1}"
+    }
+
+    "game start"
+    {
+      "en" " {default}Game will be going in 10 secounds."
+      "chi" " {default}游戏将在10秒后开始，请做好准备。"
+    }
+
+    "game start with players"
+    {
+      "#format"	"{1:d}"
+      "en" " {default}Game will be going in 10 secounds. Players now: {1}"
+      "chi" " {default}游戏将在10秒后开始，请做好准备。当前玩家数：{1}"
+    }
+
+    "hint unready"
+    {
+      "#format"	"{1:d},{2:d}"
+      "en" " {default}{1} / {2} players are ready.\nPlease type {green}!ready {default} to be ready."
+      "chi" " {default}{1} / {2} 名玩家已准备\n请输入 {green}!ready {default}准备。"
+    }
+
+    "hint ready 1"
+    {
+      "#format"	"{1:d},{2:d}"
+      "en" " {default}{1} / {2} players are ready.\nGame start needs at least 6 players."
+      "chi" " {default}{1} / {2} 名玩家已准备\n{green}至少需要6名玩家才能开始游戏。"
+    }
+
+    "hint ready 2"
+    {
+      "#format"	"{1:d},{2:d},{3:d}"
+      "en" " {default}{1} / {2} players are ready.\nGame start needs other {3} players to be ready."
+      "chi" " {default}{1} / {2} 名玩家已准备\n{green}剩余 {3} 名玩家准备后游戏开始。"
+    }
+}

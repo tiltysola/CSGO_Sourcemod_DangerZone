@@ -91,7 +91,7 @@ stock bool:PingCrosshair(client, const String:Arg[], bool:replytocommand=true)
 	SetEntProp(ent, Prop_Send, "m_hPlayer", client);
 	SetEntPropEnt(client, Prop_Send, "m_hPlayerPing", ent);
 
-	SetEntProp(ent, Prop_Send, "m_iTeamNum", Team);
+	SetEntProp(ent, Prop_Send, "m_iTeamNum", CS_TEAM_SPECTATOR);
 	
 	TR_GetEndPosition(Origin, INVALID_HANDLE);
 	
