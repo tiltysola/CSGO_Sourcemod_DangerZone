@@ -1,4 +1,4 @@
-# CSGO头号特训插件
+# CSGO头号特训插件 [English version](https://github.com/Illyasviels/CSGO_Sourcemod_DangerZone/tree/master/readme)
 适用于CSGO社区服务器的一个头号特训插件，是一个将准备系统，存活情况播报系统，战绩记录系统，管理员面板等核心功能集结为一体的核心插件。
 
 ## 功能列表：
