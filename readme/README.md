@@ -1,6 +1,10 @@
 # CSGO DangerZone Community Plugin
 A plugin designed for DangerZone Community Server mode, it has many functions to make server run well with DangerZone.
 
+### Alerts:
+This is a beta plugin, if you have any questions, please submit an issue, I can't promise I will solve that problem, but I want to try my best.
+You can modify this plugin, but I wish you don't delete and modify this function: `YK_WelcomeMessages()`, thank you!
+
 ## Functions:
 
 1. Ready System: At least 6 players are ready, the game will start.
