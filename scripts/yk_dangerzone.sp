@@ -2,7 +2,6 @@
 #include <sdktools>
 #include <cstrike>
 #include "includes/color_Stock.inc"
-#include "dangerzone/PingPosition.sp"
 
 /*************************************************
  *                                               *
@@ -99,7 +98,7 @@ int g_iPlayerKillsCount[65];
 //////////////////////////////
 public void OnPluginStart () {
   YK_InitPlugin();
-  OnPingPositionStart();
+  // OnPingPositionStart();
 }
 
 public void OnMapStart () {
@@ -132,6 +131,7 @@ public void YK_InitPlugin () {
   YK_WelcomeMessage();
 	YK_InitConvars();
   YK_InitCommands();
+  Cvars_LoadConfigs();
   ServerCommand("mp_restartgame 1"); // for debug only
   // ANY FUNCTIONS THAT SHOULD BE IN OnPluginStart
   PrintToServer("Initialized plugin: %s", PLUGIN_NAME);
@@ -163,13 +163,13 @@ public void ConVarChanged (ConVar convar, const char[] oldValue, const char[] ne
 			g_iMaxTeamCount = 3;
 		else
 			g_iMaxTeamCount = StringToInt(newValue);
-    tPrintToChatAll(" %t %t", "prefix", "team count setting", g_iMaxTeamCount);
+    tPrintToChatAll(" %t %t", "prefix", "teamcount setting", g_iMaxTeamCount);
 	}
 	if (convar == g_hSpawnHealth) {
 		if (StringToInt(newValue) < 1.0)
 			g_iSpawnHealth = 1;
-		else if (StringToInt(newValue) > 3.0)
-			g_iSpawnHealth = 3;
+		else if (StringToInt(newValue) > 1000.0)
+			g_iSpawnHealth = 1000;
 		else
 			g_iSpawnHealth = StringToInt(newValue);
     tPrintToChatAll(" %t %t", "prefix", "spawn health setting", g_iSpawnHealth);
@@ -177,12 +177,20 @@ public void ConVarChanged (ConVar convar, const char[] oldValue, const char[] ne
 	if (convar == g_hMaxHealth) {
 		if (StringToInt(newValue) < 1.0)
 			g_iMaxHealth = 1;
-		else if (StringToInt(newValue) > 3.0)
-			g_iMaxHealth = 3;
+		else if (StringToInt(newValue) > 1000.0)
+			g_iMaxHealth = 1000;
 		else
 			g_iMaxHealth = StringToInt(newValue);
     tPrintToChatAll(" %t %t", "prefix", "max health setting", g_iMaxHealth);
 	}
+}
+
+public void ConVarSaving () {
+  char dangerzone[255];
+  FormatEx(dangerzone, 256, "sourcemod/dangerzone.cfg");
+  char path[255];
+  FormatEx(path, 255, "cfg/%s", dangerzone);
+  GenerateNewConfigs(path, g_bPluginEnable, g_iBroadcastInterval, g_iMaxTeamCount, g_iSpawnHealth, g_iMaxHealth);
 }
 
 //////////////////////////////
@@ -233,6 +241,13 @@ public Action Command_DzAdmin (int client, int args) {
     return Plugin_Continue;
 }
 
+public Action Command_SaveCFG (int client, int args) {
+    if (!IsClientInGame(client) && !IsFakeClient(client))
+      return Plugin_Handled;
+    ConVarSaving();
+    return Plugin_Continue;
+}
+
 public Action Command_End (int client, int args) {
     if (!IsClientInGame(client) && !IsFakeClient(client))
         return Plugin_Handled;
@@ -279,6 +294,7 @@ public Action Command_GiveWeaponMenu (int client, int args) {
 public void Event_RoundStarted (Event event, const char[] name, bool dontBroadcast) {
   if (YK_IsMapDangerZone() && g_bPluginEnable) {
     tPrintToChatAll(" %t %t", "prefix", "plugin enabled");
+    Cvars_LoadConfigs();
     if (g_bPluginPreprocess == false) {
       g_bPluginPreprocess = true;
       YK_EndGame();
@@ -286,8 +302,8 @@ public void Event_RoundStarted (Event event, const char[] name, bool dontBroadca
       ServerCommand("mp_warmuptime 3600");
       ServerCommand("mp_warmup_pausetimer 1");
       ServerCommand("sv_dz_team_count 1");
-      ServerCommand("sv_dz_player_max_health %d", g_iMaxHealth);
-      ServerCommand("sv_dz_player_spawn_health %d", g_iSpawnHealth);
+      ServerCommand("sv_dz_player_max_health 1000");
+      ServerCommand("sv_dz_player_spawn_health 1000");
       YK_ActiveReadyTimer();
       YK_ActiveAnnounceTimer();
     } else if (g_iGameStartedStatus == 2) {
@@ -354,7 +370,7 @@ public void Event_PlayerBlind (Event event, const char[] name, bool dontBroadcas
   char attackerName[255], victimName[255];
   GetClientName(attacker, attackerName, 255);
   GetClientName(victim, victimName, 255);
-  if (strcmp(attackerName, "GOTV") != 0 && strcmp(victimName, "GOTV") != 0) {
+  if (strcmp(attackerName, "GOTV") != 0 && strcmp(victimName, "GOTV") != 0 && IsPlayerAlive(victim)) {
     if (attacker != victim) {
       tPrintToChatAll(" %t %t", "prefix", "flash others", attackerName, victimName, duration);
     } else {
@@ -432,6 +448,7 @@ public void YK_InitCommands () {
   RegConsoleCmd("sm_ready", Command_Ready);
   RegConsoleCmd("sm_unready", Command_Unready);
   RegAdminCmd("sm_dzadmin", Command_DzAdmin, ADMFLAG_CHEATS);
+  RegAdminCmd("sm_savecfg", Command_SaveCFG, ADMFLAG_CHEATS);
   RegAdminCmd("sm_start", Command_Start, ADMFLAG_CHEATS);
   RegAdminCmd("sm_end", Command_End, ADMFLAG_CHEATS);
   RegAdminCmd("sm_fend", Command_ForceEnd, ADMFLAG_CHEATS);
@@ -469,11 +486,11 @@ public void YK_BroadcastDangerZoneInfoToAll () {
       if (strcmp(clientName, "GOTV") != 0) {
         printIdPrefix++;
         if (IsPlayerAlive(client)) {
-          tPrintToChatAll(" \x04%d. %s (Alive) Left: %dhp", printIdPrefix, clientName, GetClientHealth(client));
+          tPrintToChatAll(" \x04%d. %s (%t) %t: %dhp", printIdPrefix, clientName, "alive", "left", GetClientHealth(client));
         } else if (g_iPlayerAliveStatus[client] == 1) {
-          tPrintToChatAll(" \x02%d. %s (Dead)", printIdPrefix, clientName);
+          tPrintToChatAll(" \x02%d. %s (%t)", printIdPrefix, clientName, "dead");
         } else if (g_iPlayerAliveStatus[client] == 2) {
-          tPrintToChatAll(" \x0E%d. %s (Spec)", printIdPrefix, clientName);
+          tPrintToChatAll(" \x0E%d. %s (%t)", printIdPrefix, clientName, "spec");
         }
       }
 		}
@@ -511,6 +528,8 @@ public void YK_StartGame (int readyPlayersCount) {
   ServerCommand("mp_warmuptime 10");
   ServerCommand("mp_warmup_pausetimer 0");
   ServerCommand("sv_dz_team_count %d", g_iMaxTeamCount);
+  ServerCommand("sv_dz_player_max_health %d", g_iMaxHealth);
+  ServerCommand("sv_dz_player_spawn_health %d", g_iSpawnHealth);
   KillTimer(g_hReadyTimer);
   g_hReadyTimer = null;
   YK_ActiveBroadcastTimer();
@@ -688,6 +707,9 @@ public int Menu_SettingMenu (Menu menu, MenuAction action, int param1, int param
       } else if (!strcmp(info, "maxhealth")) {
         g_mSettingMenu = BuildSettingMenu(4);
         g_mSettingMenu.Display(param1, MENU_TIME_FOREVER);
+      } else if (!strcmp(info, "savecfg")) {
+        ConVarSaving();
+        tPrintToChat(param1, " %t %t", "prefix", "cfg saved");
       } else if (!strcmp(info, "teamcount_one")) {
         ServerCommand("yk_dzTeamCount 1"); 
       } else if (!strcmp(info, "teamcount_two")) {
@@ -775,40 +797,59 @@ public int Menu_GiveWeaponMenu (Menu menu, MenuAction action, int param1, int pa
 }
 
 public Menu BuildDzAdminMenu () {
+  char buffer[255];
 	Menu menu = new Menu(Menu_DzAdminMenu);
-  menu.SetTitle("DZ管理员面板");
-  menu.AddItem("setting", "设置服务器参数");
-  menu.AddItem("respawn", "复活玩家");
-  menu.AddItem("give", "给予道具");
-  menu.AddItem("start", "开始游戏");
-  menu.AddItem("end", "结束游戏");
-  menu.AddItem("fend", "强制结束游戏");
+  FormatEx(buffer, 255, "%t", "dz admin");
+  menu.SetTitle(buffer);
+  FormatEx(buffer, 255, "%t", "dz server cvars");
+  menu.AddItem("setting", buffer);
+  FormatEx(buffer, 255, "%t", "dz respawn");
+  menu.AddItem("respawn", buffer);
+  FormatEx(buffer, 255, "%t", "dz give");
+  menu.AddItem("give", buffer);
+  FormatEx(buffer, 255, "%t", "dz start");
+  menu.AddItem("start", buffer);
+  FormatEx(buffer, 255, "%t", "dz end");
+  menu.AddItem("end", buffer);
+  FormatEx(buffer, 255, "%t", "dz fend");
+  menu.AddItem("fend", buffer);
   menu.ExitButton = true;
   return menu;
 }
 
 public Menu BuildSettingMenu (int id) {
+  char buffer[255];
 	Menu menu = new Menu(Menu_SettingMenu);
   if (id == 0) {
-    menu.SetTitle("头号行动设置面板");
-    menu.AddItem("teamcount", "设置队伍人数");
-    menu.AddItem("broadcast", "设置播报时间");
-    menu.AddItem("spawnhealth", "设置初始血量");
-    menu.AddItem("maxhealth", "设置最大血量");
+    FormatEx(buffer, 255, "%t", "dz server setting");
+    menu.SetTitle(buffer);
+    FormatEx(buffer, 255, "%t", "dz team count");
+    menu.AddItem("teamcount", buffer);
+    FormatEx(buffer, 255, "%t", "dz broadcast");
+    menu.AddItem("broadcast", buffer);
+    FormatEx(buffer, 255, "%t", "dz spawn health");
+    menu.AddItem("spawnhealth", buffer);
+    FormatEx(buffer, 255, "%t", "dz max health");
+    menu.AddItem("maxhealth", buffer);
+    FormatEx(buffer, 255, "%t", "dz save cfg");
+    menu.AddItem("savecfg", buffer);
   } else if (id == 1) {
-    menu.SetTitle("设置队伍人数");
+    FormatEx(buffer, 255, "%t", "dz team count");
+    menu.SetTitle(buffer);
     menu.AddItem("teamcount_one", "1");
     menu.AddItem("teamcount_two", "2");
     menu.AddItem("teamcount_three", "3");
   } else if (id == 2) {
-    menu.SetTitle("设置播报时间");
+    FormatEx(buffer, 255, "%t", "dz broadcast");
+    menu.SetTitle(buffer);
     menu.AddItem("broadcast_30", "30s");
     menu.AddItem("broadcast_60", "60s");
     menu.AddItem("broadcast_90", "90s");
     menu.AddItem("broadcast_180", "180s");
     menu.AddItem("broadcast_1800", "1800s");
   } else if (id == 3) {
-    menu.SetTitle("设置初始血量");
+    FormatEx(buffer, 255, "%t", "dz spawn health");
+    menu.SetTitle(buffer);
     menu.AddItem("spawnhealth_1", "1");
     menu.AddItem("spawnhealth_65", "65");
     menu.AddItem("spawnhealth_100", "100");
@@ -816,7 +857,8 @@ public Menu BuildSettingMenu (int id) {
     menu.AddItem("spawnhealth_320", "320");
     menu.AddItem("spawnhealth_1000", "1000");
   } else if (id == 4) {
-    menu.SetTitle("设置最大血量");
+    FormatEx(buffer, 255, "%t", "dz max health");
+    menu.SetTitle(buffer);
     menu.AddItem("maxhealth_1", "1");
     menu.AddItem("maxhealth_65", "65");
     menu.AddItem("maxhealth_100", "100");
@@ -829,9 +871,11 @@ public Menu BuildSettingMenu (int id) {
 }
 
 public Menu BuildRespawnMenu () {
+  char buffer[255];
   int deadPlayersCount = 0;
 	Menu menu = new Menu(Menu_RespawnMenu);
-  menu.SetTitle("重生一名玩家");
+  FormatEx(buffer, 255, "%t", "dz respawn");
+  menu.SetTitle(buffer);
 	for (int client = 1; client <= MaxClients; ++client) {
 		if (IsClientInGame(client)) {
 			char clientName[255];
@@ -839,9 +883,9 @@ public Menu BuildRespawnMenu () {
       if (strcmp(clientName, "GOTV") != 0) {
         if (!IsPlayerAlive(client)) {
           deadPlayersCount++;
-          char buffer[8];
-          FormatEx(buffer, 8, "%d", client);
-          menu.AddItem(buffer, clientName);
+          char buffer2[8];
+          FormatEx(buffer2, 8, "%d", client);
+          menu.AddItem(buffer2, clientName);
         }
       }
 		}
@@ -854,17 +898,26 @@ public Menu BuildRespawnMenu () {
 }
 
 public Menu BuildGiveWeaponMenu (int id) {
+  char buffer[255];
 	Menu menu = new Menu(Menu_GiveWeaponMenu);
   if (id == 0) {
-      menu.SetTitle("选择武器类型");
-      menu.AddItem("pistols", "手枪");
-      menu.AddItem("heavy", "重型武器");
-      menu.AddItem("smgs", "冲锋枪");
-      menu.AddItem("rifles", "步枪");
-      menu.AddItem("gear", "近战武器");
-      menu.AddItem("grenades", "投掷物");
+      FormatEx(buffer, 255, "%t", "dz give");
+      menu.SetTitle(buffer);
+      FormatEx(buffer, 255, "%t", "give pistols");
+      menu.AddItem("pistols", buffer);
+      FormatEx(buffer, 255, "%t", "give heavy");
+      menu.AddItem("heavy", buffer);
+      FormatEx(buffer, 255, "%t", "give smgs");
+      menu.AddItem("smgs", buffer);
+      FormatEx(buffer, 255, "%t", "give rifles");
+      menu.AddItem("rifles", buffer);
+      FormatEx(buffer, 255, "%t", "give gear");
+      menu.AddItem("gear", buffer);
+      FormatEx(buffer, 255, "%t", "give grenades");
+      menu.AddItem("grenades", buffer);
   } else if (id == 1) {
-      menu.SetTitle("选择一个手枪");
+      FormatEx(buffer, 255, "%t", "give pistols");
+      menu.SetTitle(buffer);
       menu.AddItem("weapon_glock", "Glock");
       menu.AddItem("weapon_p250", "P250");
       menu.AddItem("weapon_fiveseven", "57");
@@ -872,7 +925,8 @@ public Menu BuildGiveWeaponMenu (int id) {
       menu.AddItem("weapon_hkp2000", "P2000");
       menu.AddItem("weapon_tec9", "Tec9");
   } else if (id == 2) {
-      menu.SetTitle("选择一个重型武器");
+      FormatEx(buffer, 255, "%t", "give heavy");
+      menu.SetTitle(buffer);
       menu.AddItem("weapon_nova", "Nova");
       menu.AddItem("weapon_xm1014", "XM1014");
       menu.AddItem("weapon_mag7", "Mag7");
@@ -880,7 +934,8 @@ public Menu BuildGiveWeaponMenu (int id) {
       menu.AddItem("weapon_m249", "M249");
       menu.AddItem("weapon_negev", "Negav");
   } else if (id == 3) {
-      menu.SetTitle("选择一个冲锋枪");
+      FormatEx(buffer, 255, "%t", "give smgs");
+      menu.SetTitle(buffer);
       menu.AddItem("weapon_mp9", "MP9");
       menu.AddItem("weapon_mac10", "Mac10");
       menu.AddItem("weapon_mp7", "Mp7");
@@ -888,7 +943,8 @@ public Menu BuildGiveWeaponMenu (int id) {
       menu.AddItem("weapon_p90", "P90");
       menu.AddItem("weapon_bizon", "Bizon-PP");
   } else if (id == 4) {
-      menu.SetTitle("选择一个步枪");
+      FormatEx(buffer, 255, "%t", "give rifles");
+      menu.SetTitle(buffer);
       menu.AddItem("weapon_famas", "Famas");
       menu.AddItem("weapon_m4a1", "M4A1");
       menu.AddItem("weapon_galilar", "Galilar");
@@ -900,11 +956,13 @@ public Menu BuildGiveWeaponMenu (int id) {
       menu.AddItem("weapon_scar20", "Scar20");
       menu.AddItem("weapon_g3sg1", "G3SG1");
   } else if (id == 5) {
-      menu.SetTitle("选择一个近战武器");
+      FormatEx(buffer, 255, "%t", "give gear");
+      menu.SetTitle(buffer);
       menu.AddItem("weapon_taser", "Taser");
       menu.AddItem("weapon_knife", "knife");
   } else if (id == 6) {
-      menu.SetTitle("选择一个投掷物");
+      FormatEx(buffer, 255, "%t", "give grenades");
+      menu.SetTitle(buffer);
       menu.AddItem("weapon_hegrenade", "Hegrenade");
       menu.AddItem("weapon_flashbang", "Flash");
       menu.AddItem("weapon_smokegrenade", "Smoke");
@@ -913,6 +971,126 @@ public Menu BuildGiveWeaponMenu (int id) {
   }
   menu.ExitButton = true;
   return menu;
+}
+
+//////////////////////////////
+//           CFG            //
+//////////////////////////////
+static void Cvars_LoadConfigs () {
+  // load map config
+  char dangerzone[255];
+  FormatEx(dangerzone, 256, "sourcemod/dangerzone.cfg");
+
+  char path[255];
+  FormatEx(path, 255, "cfg/%s", dangerzone);
+
+  if (!FileExists(path)) {
+    GenerateConfigs(path);
+    LogMessage("[%s] does not exists, Auto-generated.", dangerzone);
+    return;
+  }
+
+  ServerCommand("exec %s", dangerzone);
+  LogMessage("Executed %s", dangerzone);
+}
+
+static void GenerateConfigs (char[] path) {
+  File file = OpenFile(path, "w+");
+
+  if (file == null) {
+    LogError("Failed to create [%s]", path);
+    return;
+  }
+
+  file.WriteLine("// This file was auto-generated by yk_dangerzone.smx");
+
+  file.WriteLine("");
+  file.WriteLine("");
+
+  //Plugin Enable
+  file.WriteLine("// 设置插件是否默认启用");
+  file.WriteLine("// Set plugin enable");
+  file.WriteLine("yk_dzEnable \"1\"");
+  file.WriteLine("");
+
+  //Plugin Enable
+  file.WriteLine("// 设置播报时间间隔");
+  file.WriteLine("// Set broadcast interval");
+  file.WriteLine("yk_dzInterval \"60\"");
+  file.WriteLine("");
+
+  //Plugin Enable
+  file.WriteLine("// 设置小队人数上限");
+  file.WriteLine("// Set team players count");
+  file.WriteLine("yk_dzTeamCount \"1\"");
+  file.WriteLine("");
+
+  //Plugin Enable
+  file.WriteLine("// 设置初始血量");
+  file.WriteLine("// Set spawn health");
+  file.WriteLine("yk_dzSpawnHealth \"185\"");
+  file.WriteLine("");
+
+  //Plugin Enable
+  file.WriteLine("// 设置最大血量");
+  file.WriteLine("// Set max health");
+  file.WriteLine("yk_dzMaxHealth \"320\"");
+  file.WriteLine("");
+
+  delete file;
+}
+
+static void GenerateNewConfigs (char[] path, int a, int b, int c, int d, int e) {
+  File file = OpenFile(path, "w+");
+
+  if (file == null) {
+    LogError("Failed to create [%s]", path);
+    return;
+  }
+
+  file.WriteLine("// This file was auto-generated by yk_dangerzone.smx");
+
+  file.WriteLine("");
+  file.WriteLine("");
+
+  char buffer[255];
+
+  //Plugin Enable
+  file.WriteLine("// 设置插件是否默认启用");
+  file.WriteLine("// Set plugin enable");
+  FormatEx(buffer, 255, "yk_dzEnable \"%d\"", a);
+  file.WriteLine(buffer);
+  file.WriteLine("");
+
+  //Plugin Enable
+  file.WriteLine("// 设置播报时间间隔");
+  file.WriteLine("// Set broadcast interval");
+  FormatEx(buffer, 255, "yk_dzInterval \"%d\"", b);
+  file.WriteLine(buffer);
+  file.WriteLine("");
+
+  //Plugin Enable
+  file.WriteLine("// 设置小队人数上限");
+  file.WriteLine("// Set team players count");
+  FormatEx(buffer, 255, "yk_dzTeamCount \"%d\"", c);
+  file.WriteLine(buffer);
+  file.WriteLine("");
+
+  //Plugin Enable
+  file.WriteLine("// 设置初始血量");
+  file.WriteLine("// Set spawn health");
+  FormatEx(buffer, 255, "yk_dzSpawnHealth \"%d\"", d);
+  file.WriteLine(buffer);
+  file.WriteLine("");
+
+  //Plugin Enable
+  file.WriteLine("// 设置最大血量");
+  file.WriteLine("// Set max health");
+  FormatEx(buffer, 255, "yk_dzMaxHealth \"%d\"", e);
+  file.WriteLine(buffer);
+  file.WriteLine("");
+
+  delete file;
 }
 
 //////////////////////////////

@@ -232,4 +232,156 @@
       "en" " {olive}{1}{default} interact with {olive}{2}"
       "chi" " {olive}{1}{default}与{olive}{2}{default}进行了交互。"
     }
+
+    "interact"
+    {
+      "#format"	"{1:s},{2:s}"
+      "en" " {olive}{1}{default} interact with {olive}{2}"
+      "chi" " {olive}{1}{default}与{olive}{2}{default}进行了交互。"
+    }
+
+    "alive"
+    {
+      "en" "Alive"
+      "chi" "存活"
+    }
+
+    "dead"
+    {
+      "en" "Dead"
+      "chi" "死亡"
+    }
+
+    "spec"
+    {
+      "en" "Spec"
+      "chi" "观察者"
+    }
+
+    "left"
+    {
+      "en" "Left"
+      "chi" "剩余"
+    }
+
+    "cfg saved"
+    {
+      "en" "Local Server Info has been saved."
+      "chi" "服务器设置已被保存！"
+    }
+
+    "dz admin"
+    {
+      "en" "DZ Admin Panel"
+      "chi" "头号特训管理面板"
+    }
+
+
+    "dz server cvars"
+    {
+      "en" "Server Setting"
+      "chi" "设置服务器参数"
+    }
+
+    "dz respawn"
+    {
+      "en" "Respawn"
+      "chi" "复活玩家"
+    }
+
+    "dz give"
+    {
+      "en" "Give"
+      "chi" "给予道具"
+    }
+
+    "dz start"
+    {
+      "en" "Start game"
+      "chi" "开始游戏"
+    }
+
+    "dz end"
+    {
+      "en" "End game"
+      "chi" "结束游戏"
+    }
+
+    "dz fend"
+    {
+      "en" "Force end game"
+      "chi" "强制结束游戏"
+    }
+
+    "dz server setting"
+    {
+      "en" "DZ Server Setting"
+      "chi" "头号行动设置面板"
+    }
+
+    "dz team count"
+    {
+      "en" "Change team players count"
+      "chi" "设置队伍人数"
+    }
+
+    "dz broadcast"
+    {
+      "en" "Change broadcast interval"
+      "chi" "设置播报时间"
+    }
+
+    "dz spawn health"
+    {
+      "en" "Change spawn health"
+      "chi" "设置初始血量"
+    }
+
+    "dz max health"
+    {
+      "en" "Change max health"
+      "chi" "设置最大血量"
+    }
+
+    "dz save cfg"
+    {
+      "en" "=> Save Server Setting"
+      "chi" "=> 保存当前设置"
+    }
+    
+    "give pistols"
+    {
+      "en" "Pistols"
+      "chi" "手枪"
+    }
+
+    "give heavy"
+    {
+      "en" "Heavy"
+      "chi" "重型武器"
+    }
+
+    "give smgs"
+    {
+      "en" "SMGs"
+      "chi" "冲锋枪"
+    }
+
+    "give rifles"
+    {
+      "en" "Rifles"
+      "chi" "步枪"
+    }
+
+    "give gear"
+    {
+      "en" "Gear"
+      "chi" "近战武器"
+    }
+    
+    "give grenades"
+    {
+      "en" "Grenades"
+      "chi" "投掷物"
+    }
 }
