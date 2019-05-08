@@ -70,12 +70,6 @@ You can modify this plugin, but I wish you don't delete and modify this function
 /*
  Navicat Premium Data Transfer
 
- Source Server         : ezcsgo.cn
- Source Server Type    : MySQL
- Source Server Version : 80015
- Source Host           : ezcsgo.cn:3306
- Source Schema         : csgostore
-
  Target Server Type    : MySQL
  Target Server Version : 80015
  File Encoding         : 65001
