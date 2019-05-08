@@ -101,3 +101,7 @@ CREATE TABLE `dangerzone`  (
 
 SET FOREIGN_KEY_CHECKS = 1;
 ```
+
+### 支持：
+1. 贝宝: kanade@acgme.cn
+2. 支付宝: kanade@acgme.cn
