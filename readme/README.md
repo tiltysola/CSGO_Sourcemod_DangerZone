@@ -102,3 +102,6 @@ CREATE TABLE `dangerzone`  (
 
 SET FOREIGN_KEY_CHECKS = 1;
 ```
+
+### Support Me:
+1. Paypal: kanade@acgme.cn
