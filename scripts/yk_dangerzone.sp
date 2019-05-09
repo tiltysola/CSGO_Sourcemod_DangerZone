@@ -2,6 +2,7 @@
 #include <sdktools>
 #include <cstrike>
 #include "includes/color_Stock.inc"
+#include "dangerzone/killsounds.sp"
 
 /*************************************************
  *                                               *
@@ -91,6 +92,7 @@ Menu g_mRespawnMenu = null;
 Menu g_mGiveWeaponMenu = null;
 
 // Kill system
+int g_iFirstBlood = 0;
 int g_iPlayerKillsCount[65];
 
 //////////////////////////////
@@ -104,7 +106,7 @@ public void OnPluginStart () {
 public void OnMapStart () {
   ServerCommand("sv_dz_cash_bundle_size 100");
   ServerCommand("sv_dz_warmup_weapon weapon_awp"); 
-  YK_PrecacheSounds();
+  YK_InitKillSounds();
 }
 
 public void OnClientPutInServer (int client) {
@@ -308,6 +310,7 @@ public void Event_RoundStarted (Event event, const char[] name, bool dontBroadca
       YK_ActiveAnnounceTimer();
     } else if (g_iGameStartedStatus == 2) {
       g_iGameStartedStatus = 1;
+      g_iFirstBlood = 0;
       for (int client = 1; client <= MaxClients; ++client) {
         if (IsClientInGame(client) && IsClientConnected(client)) {
           g_iPlayerKillsCount[client] = 0;
@@ -389,21 +392,16 @@ public void Event_PlayerDeath (Event event, const char[] name, bool dontBroadcas
       DB_AddKillToPlayer(attacker);
     }
     DB_AddDeathToPlayer(victim);
-    g_iPlayerKillsCount[attacker]++;
-    if (g_iPlayerKillsCount[attacker] >= 3) {
-      for (int time = 0; time < g_iPlayerKillsCount[attacker]; time++)
-        tPrintToChatAll(" %t %t", "prefix", "multi kill", attackerName, g_iPlayerKillsCount[attacker]);
-    }
-    for (int client = 1; client <= MaxClients; ++client) {
-      if (IsClientInGame(client) && IsClientConnected(client) && !IsFakeClient(client)) {
-        if (client == victim) {
-          EmitSoundToClient(client, "einzbern/229875-e1721e64-3864-4528-b495-7a77efc7be1c.mp3", client, SNDCHAN_AUTO, SNDLEVEL_MINIBIKE, SND_NOFLAGS);
-        } else if (client == attacker) {
-          EmitSoundToClient(client, "einzbern/229875-925e9c0e-8f02-4e27-bd84-5f0704012a51.mp3", client, SNDCHAN_AUTO, SNDLEVEL_MINIBIKE, SND_NOFLAGS);
-        } else {
-          EmitSoundToClient(client, "einzbern/229875-a39ebdcd-20df-417c-b3e9-ac254dc1a701.mp3", client, SNDCHAN_AUTO, SNDLEVEL_MINIBIKE, SND_NOFLAGS);
-        }
+    if (attacker != victim && attacker != 0) {
+      g_iPlayerKillsCount[attacker]++;
+      if (g_iPlayerKillsCount[attacker] >= 3) {
+        for (int time = 0; time < g_iPlayerKillsCount[attacker]; time++)
+          tPrintToChatAll(" %t %t", "prefix", "multi kill", attackerName, g_iPlayerKillsCount[attacker]);
       }
+      YK_PlayKillSounds(attacker, victim, g_iFirstBlood, g_iPlayerKillsCount[attacker]);
+      g_iFirstBlood = 1;
+    } else {
+      YK_PlayKillSounds(0, 0, 0, 0);
     }
   }
 }
@@ -1206,16 +1204,4 @@ public void YK_WelcomeMessage () {
   tPrintToChatAll("%t", "welcome line 5");
   tPrintToChatAll("%t", "welcome line 6");
   tPrintToChatAll("%t", "welcome line 1");
-}
-
-//////////////////////////////
-//     SOUNDS PRECACHE      //
-//////////////////////////////
-public void YK_PrecacheSounds () {
-  AddFileToDownloadsTable("sound/einzbern/229875-a39ebdcd-20df-417c-b3e9-ac254dc1a701.mp3");
-  AddFileToDownloadsTable("sound/einzbern/229875-925e9c0e-8f02-4e27-bd84-5f0704012a51.mp3");
-  AddFileToDownloadsTable("sound/einzbern/229875-e1721e64-3864-4528-b495-7a77efc7be1c.mp3");
-  PrecacheSound("einzbern/229875-a39ebdcd-20df-417c-b3e9-ac254dc1a701.mp3"); // an enemy has been slain
-  PrecacheSound("einzbern/229875-925e9c0e-8f02-4e27-bd84-5f0704012a51.mp3");  // you has slain an enemy
-  PrecacheSound("einzbern/229875-e1721e64-3864-4528-b495-7a77efc7be1c.mp3");  // you has been slain
 }

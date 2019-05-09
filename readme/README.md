@@ -5,6 +5,10 @@ A plugin designed for DangerZone Community Server mode, it has many functions to
 This is a beta plugin, if you have any questions, please submit an issue, I can't promise I will solve that problem, but I want to try my best.
 You can modify this plugin, but I wish you don't delete and modify this function: `YK_WelcomeMessages()`, thank you!
 
+## Updates:
+
+1. 2019/5/9: Change voice pack to LOL jaJP Kill Voice Pack.
+
 ## Functions:
 
 1. Ready System: At least 6 players are ready, the game will start.
@@ -13,7 +17,7 @@ You can modify this plugin, but I wish you don't delete and modify this function
 4. Squad Manage System: Now you can only change the team players count to 1 - 3.
 5. Health System: You can change the spawn health and max health when the game begin.
 6. Admin Panel: You can change game convars and respawn players, also cheats.
-7. Death Sounds: You has been slained, You has slained an enemy, An enemy has been slained?
+7. Death Sounds: This version => LOL jaJP Voice Pack.
 8. I18N System: Now plugin supports Chinese and English.
 9. Other repair: When a player died, plugin will auto put him to spectator.
 
