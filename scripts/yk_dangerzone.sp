@@ -204,9 +204,9 @@ public Action Command_Ready (int client, int args) {
     if (g_iGameStartedStatus == 0) {
       if (g_iPlayerReadyStatus[client] == 0) {
         g_iPlayerReadyStatus[client] = 1;
-        tPrintToChatAll(" %t %t", "prefix", "ready");
+        tPrintToChat(client, " %t %t", "prefix", "ready");
       } else {
-        tPrintToChatAll(" %t %t", "prefix", "retype ready");
+        tPrintToChat(client, " %t %t", "prefix", "retype ready");
       }
     }
     return Plugin_Continue;
@@ -218,9 +218,9 @@ public Action Command_Unready (int client, int args) {
     if (g_iGameStartedStatus == 0) {
       if (g_iPlayerReadyStatus[client] == 1) {
         g_iPlayerReadyStatus[client] = 0;
-        tPrintToChatAll(" %t %t", "prefix", "unready");
+        tPrintToChat(client, " %t %t", "prefix", "unready");
       } else {
-        tPrintToChatAll(" %t %t", "prefix", "retype unready");
+        tPrintToChat(client, " %t %t", "prefix", "retype unready");
       }
     }
     return Plugin_Continue;
@@ -275,7 +275,7 @@ public Action Command_RespawnMenu (int client, int args) {
       return Plugin_Handled;
     g_mRespawnMenu = BuildRespawnMenu();
     if (g_mRespawnMenu == null) {
-      tPrintToChatAll(" %t %t", "prefix", "respawn player not found");
+      tPrintToChat(client, " %t %t", "prefix", "respawn player not found");
       return Plugin_Handled;
     }
     g_mRespawnMenu.Display(client, MENU_TIME_FOREVER);
