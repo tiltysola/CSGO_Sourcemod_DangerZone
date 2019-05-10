@@ -7,7 +7,12 @@ You can modify this plugin, but I wish you don't delete and modify this function
 
 ## Updates:
 
-1. 2019/5/9: Change voice pack to LOL jaJP Kill Voice Pack.
+### 1. 2019/5/9: Change voice pack to LOL jaJP Kill Voice Pack.
+### 2. 2019/5/10: 
+
+1. Fix server crash problems when server starting...
+2. Fix when 2 players ready game start problem.
+3. add `yk_dzReadyToStartPlayersCount` ConVar to control game start process.
 
 ## Functions:
 
@@ -40,6 +45,7 @@ You can modify this plugin, but I wish you don't delete and modify this function
 3. yk_dzTeamCount : Set squad players count (1 man - 3 men)
 4. yk_dzSpawnHealth : Set players spawn health after game begin (1hp - 1000hp)
 5. yk_dzMaxHealth : Set players max health after game begin (1hp - 1000hp)
+6. `NEW` yk_dzReadyToStartPlayersCount : Set game start needs minium ready players count (2 men - 18 men)
 
 ## What I want:
 

@@ -48,6 +48,10 @@ bool g_bPluginEnable = true;
 bool g_bPluginPreprocess = false;
 
 // Ready system
+ConVar g_hReadyToStartPlayersCount = null;
+
+int g_iReadyToStartPlayersCount = 6;
+
 int g_iPlayerReadyStatus[MAXPLAYERS + 1];
 int g_iGameStartedStatus = 0;
 
@@ -152,8 +156,8 @@ public void ConVarChanged (ConVar convar, const char[] oldValue, const char[] ne
 	if (convar == g_hBroadcastInterval) {
 		if (StringToInt(newValue) < 30.0)
 			g_iBroadcastInterval = 30;
-		else if (StringToInt(newValue) > 180.0)
-			g_iBroadcastInterval = 180;
+		else if (StringToInt(newValue) > 1800.0)
+			g_iBroadcastInterval = 1800;
 		else
 			g_iBroadcastInterval = StringToInt(newValue);
     tPrintToChatAll(" %t %t", "prefix", "broadcast interval setting", g_iBroadcastInterval);
@@ -185,6 +189,15 @@ public void ConVarChanged (ConVar convar, const char[] oldValue, const char[] ne
 			g_iMaxHealth = StringToInt(newValue);
     tPrintToChatAll(" %t %t", "prefix", "max health setting", g_iMaxHealth);
 	}
+	if (convar == g_hReadyToStartPlayersCount) {
+		if (StringToInt(newValue) < 2.0)
+			g_iReadyToStartPlayersCount = 2;
+		else if (StringToInt(newValue) > 18.0)
+			g_iReadyToStartPlayersCount = 18;
+		else
+			g_iReadyToStartPlayersCount = StringToInt(newValue);
+    tPrintToChatAll(" %t %t", "prefix", "ready start players count", g_iReadyToStartPlayersCount);
+	}
 }
 
 public void ConVarSaving () {
@@ -192,7 +205,7 @@ public void ConVarSaving () {
   FormatEx(dangerzone, 256, "sourcemod/dangerzone.cfg");
   char path[255];
   FormatEx(path, 255, "cfg/%s", dangerzone);
-  GenerateNewConfigs(path, g_bPluginEnable, g_iBroadcastInterval, g_iMaxTeamCount, g_iSpawnHealth, g_iMaxHealth);
+  GenerateNewConfigs(path, g_bPluginEnable, g_iBroadcastInterval, g_iMaxTeamCount, g_iSpawnHealth, g_iMaxHealth, g_iReadyToStartPlayersCount);
 }
 
 //////////////////////////////
@@ -428,11 +441,14 @@ public void YK_InitConvars () {
 					"Min value is 1 and max value is 1000.", _, true, 1.0,   true, 1000.0);
 	g_hMaxHealth = CreateConVar("yk_dzMaxHealth", "320",
 					"Min value is 1 and max value is 1000.", _, true, 1.0,   true, 1000.0);
+  g_hReadyToStartPlayersCount = CreateConVar("yk_dzReadyToStartPlayersCount", "6",
+					"Min value is 2 and max value is 18.", _, true, 2.0,   true, 18.0);
 	HookConVarChange(g_hPluginEnable, ConVarChanged);
 	HookConVarChange(g_hBroadcastInterval, ConVarChanged);
 	HookConVarChange(g_hMaxTeamCount, ConVarChanged);
 	HookConVarChange(g_hSpawnHealth, ConVarChanged);
 	HookConVarChange(g_hMaxHealth, ConVarChanged);
+	HookConVarChange(g_hReadyToStartPlayersCount, ConVarChanged);
 	HookEventEx("round_freeze_end", Event_RoundStarted, EventHookMode_Post);
 	HookEventEx("round_end", Event_RoundEnd, EventHookMode_Post);
 	HookEventEx("player_hurt", Event_PlayerHurt, EventHookMode_Post);
@@ -611,12 +627,12 @@ public Action Timer_ReadyTimer (Handle timer) {
           FormatEx(szBuffer, 255, "%t", "hint unready", readyPlayersCount, readyPlayersCount + unreadyPlayersCount);
           PrintHintText(client, szBuffer);
         } else {
-          if (readyPlayersCount + unreadyPlayersCount < 6){
+          if (readyPlayersCount + unreadyPlayersCount < g_iReadyToStartPlayersCount){
             char szBuffer[256];
-            FormatEx(szBuffer, 255, "%t", "hint ready 1", readyPlayersCount, readyPlayersCount + unreadyPlayersCount);
+            FormatEx(szBuffer, 255, "%t", "hint ready 1", readyPlayersCount, readyPlayersCount + unreadyPlayersCount, g_iReadyToStartPlayersCount);
             PrintHintText(client, szBuffer);
           } else {
-            int restPlayersCount = ((6 - readyPlayersCount) > 0) ? (6 - readyPlayersCount) : 0;
+            int restPlayersCount = ((g_iReadyToStartPlayersCount - readyPlayersCount) > 0) ? (g_iReadyToStartPlayersCount - readyPlayersCount) : 0;
             char szBuffer[256];
             FormatEx(szBuffer, 255, "%t", "hint ready 2", readyPlayersCount, readyPlayersCount + unreadyPlayersCount, restPlayersCount);
             PrintHintText(client, szBuffer);
@@ -624,7 +640,7 @@ public Action Timer_ReadyTimer (Handle timer) {
         }
       }
     }
-    if ((unreadyPlayersCount == 0 && readyPlayersCount >= 2) || (readyPlayersCount >= 6)) {
+    if (readyPlayersCount >= g_iReadyToStartPlayersCount) {
       g_iGameStartedStatus = 2;
     }
   } else {
@@ -665,6 +681,9 @@ public int Menu_DzAdminMenu (Menu menu, MenuAction action, int param1, int param
         g_mSettingMenu.Display(param1, MENU_TIME_FOREVER);
       } else if (!strcmp(info, "respawn")) {
         g_mRespawnMenu = BuildRespawnMenu();
+        if (g_mRespawnMenu == null) {
+          tPrintToChat(param1, " %t %t", "prefix", "respawn player not found");
+        }
         g_mRespawnMenu.Display(param1, MENU_TIME_FOREVER);
       } else if (!strcmp(info, "give")) {
         g_mGiveWeaponMenu = BuildGiveWeaponMenu(0);
@@ -704,6 +723,9 @@ public int Menu_SettingMenu (Menu menu, MenuAction action, int param1, int param
         g_mSettingMenu.Display(param1, MENU_TIME_FOREVER);
       } else if (!strcmp(info, "maxhealth")) {
         g_mSettingMenu = BuildSettingMenu(4);
+        g_mSettingMenu.Display(param1, MENU_TIME_FOREVER);
+      } else if (!strcmp(info, "readyplayers")) {
+        g_mSettingMenu = BuildSettingMenu(5);
         g_mSettingMenu.Display(param1, MENU_TIME_FOREVER);
       } else if (!strcmp(info, "savecfg")) {
         ConVarSaving();
@@ -748,6 +770,16 @@ public int Menu_SettingMenu (Menu menu, MenuAction action, int param1, int param
         ServerCommand("yk_dzMaxHealth 320"); 
       } else if (!strcmp(info, "maxhealth_1000")) {
         ServerCommand("yk_dzMaxHealth 1000"); 
+      } else if (!strcmp(info, "readyplayers_2")) {
+        ServerCommand("yk_dzReadyToStartPlayersCount 2"); 
+      } else if (!strcmp(info, "readyplayers_6")) {
+        ServerCommand("yk_dzReadyToStartPlayersCount 6"); 
+      } else if (!strcmp(info, "readyplayers_10")) {
+        ServerCommand("yk_dzReadyToStartPlayersCount 10"); 
+      } else if (!strcmp(info, "readyplayers_14")) {
+        ServerCommand("yk_dzReadyToStartPlayersCount 14"); 
+      } else if (!strcmp(info, "readyplayers_18")) {
+        ServerCommand("yk_dzReadyToStartPlayersCount 18"); 
       }
     }
 	}
@@ -829,6 +861,8 @@ public Menu BuildSettingMenu (int id) {
     menu.AddItem("spawnhealth", buffer);
     FormatEx(buffer, 255, "%t", "dz max health");
     menu.AddItem("maxhealth", buffer);
+    FormatEx(buffer, 255, "%t", "dz ready players");
+    menu.AddItem("readyplayers", buffer);
     FormatEx(buffer, 255, "%t", "dz save cfg");
     menu.AddItem("savecfg", buffer);
   } else if (id == 1) {
@@ -863,6 +897,14 @@ public Menu BuildSettingMenu (int id) {
     menu.AddItem("maxhealth_185", "185");
     menu.AddItem("maxhealth_320", "320");
     menu.AddItem("maxhealth_1000", "1000");
+  } else if (id == 5) {
+    FormatEx(buffer, 255, "%t", "dz ready players");
+    menu.SetTitle(buffer);
+    menu.AddItem("readyplayers_2", "2");
+    menu.AddItem("readyplayers_6", "6");
+    menu.AddItem("readyplayers_10", "10");
+    menu.AddItem("readyplayers_14", "14");
+    menu.AddItem("readyplayers_18", "18");
   }
   menu.ExitButton = true;
   return menu;
@@ -1008,37 +1050,43 @@ static void GenerateConfigs (char[] path) {
   //Plugin Enable
   file.WriteLine("// 设置插件是否默认启用");
   file.WriteLine("// Set plugin enable");
-  file.WriteLine("yk_dzEnable \"1\"");
+  file.WriteLine("yk_dzEnable 1");
   file.WriteLine("");
 
-  //Plugin Enable
+  //Broadcast Interval
   file.WriteLine("// 设置播报时间间隔");
   file.WriteLine("// Set broadcast interval");
-  file.WriteLine("yk_dzInterval \"60\"");
+  file.WriteLine("yk_dzInterval 60");
   file.WriteLine("");
 
-  //Plugin Enable
+  //Team Player Count
   file.WriteLine("// 设置小队人数上限");
   file.WriteLine("// Set team players count");
-  file.WriteLine("yk_dzTeamCount \"1\"");
+  file.WriteLine("yk_dzTeamCount 1");
   file.WriteLine("");
 
-  //Plugin Enable
+  //Spawn Health
   file.WriteLine("// 设置初始血量");
   file.WriteLine("// Set spawn health");
-  file.WriteLine("yk_dzSpawnHealth \"185\"");
+  file.WriteLine("yk_dzSpawnHealth 185");
   file.WriteLine("");
 
-  //Plugin Enable
+  //Max Health
   file.WriteLine("// 设置最大血量");
   file.WriteLine("// Set max health");
-  file.WriteLine("yk_dzMaxHealth \"320\"");
+  file.WriteLine("yk_dzMaxHealth 320");
+  file.WriteLine("");
+
+  //Start Need Players
+  file.WriteLine("// 设置开始游戏需要准备玩家数");
+  file.WriteLine("// Set game start needs players count");
+  file.WriteLine("yk_dzReadyToStartPlayersCount 6");
   file.WriteLine("");
 
   delete file;
 }
 
-static void GenerateNewConfigs (char[] path, int a, int b, int c, int d, int e) {
+static void GenerateNewConfigs (char[] path, int a, int b, int c, int d, int e, int f) {
   File file = OpenFile(path, "w+");
 
   if (file == null) {
@@ -1056,35 +1104,42 @@ static void GenerateNewConfigs (char[] path, int a, int b, int c, int d, int e) 
   //Plugin Enable
   file.WriteLine("// 设置插件是否默认启用");
   file.WriteLine("// Set plugin enable");
-  FormatEx(buffer, 255, "yk_dzEnable \"%d\"", a);
+  FormatEx(buffer, 255, "yk_dzEnable %d", a);
   file.WriteLine(buffer);
   file.WriteLine("");
 
-  //Plugin Enable
+  //Broadcast Interval
   file.WriteLine("// 设置播报时间间隔");
   file.WriteLine("// Set broadcast interval");
-  FormatEx(buffer, 255, "yk_dzInterval \"%d\"", b);
+  FormatEx(buffer, 255, "yk_dzInterval %d", b);
   file.WriteLine(buffer);
   file.WriteLine("");
 
-  //Plugin Enable
+  //Team Player Count
   file.WriteLine("// 设置小队人数上限");
   file.WriteLine("// Set team players count");
-  FormatEx(buffer, 255, "yk_dzTeamCount \"%d\"", c);
+  FormatEx(buffer, 255, "yk_dzTeamCount %d", c);
   file.WriteLine(buffer);
   file.WriteLine("");
 
-  //Plugin Enable
+  //Spawn Health
   file.WriteLine("// 设置初始血量");
   file.WriteLine("// Set spawn health");
-  FormatEx(buffer, 255, "yk_dzSpawnHealth \"%d\"", d);
+  FormatEx(buffer, 255, "yk_dzSpawnHealth %d", d);
   file.WriteLine(buffer);
   file.WriteLine("");
 
-  //Plugin Enable
+  //Max Health
   file.WriteLine("// 设置最大血量");
   file.WriteLine("// Set max health");
-  FormatEx(buffer, 255, "yk_dzMaxHealth \"%d\"", e);
+  FormatEx(buffer, 255, "yk_dzMaxHealth %d", e);
+  file.WriteLine(buffer);
+  file.WriteLine("");
+
+  //Start Need Players
+  file.WriteLine("// 设置开始游戏需要准备玩家数");
+  file.WriteLine("// Set game start needs players count");
+  FormatEx(buffer, 255, "yk_dzReadyToStartPlayersCount %d", f);
   file.WriteLine(buffer);
   file.WriteLine("");
 

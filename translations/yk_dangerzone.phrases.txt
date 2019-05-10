@@ -93,6 +93,13 @@
       "en" " {default}Max health has been set to: {1}"
       "chi" " {default}血量上限已被管理员设置为：{1}"
     }
+    
+    "ready start players count"
+    {
+      "#format"	"{1:d}"
+      "en" " {default}Game start needs ready players has been set to: {1}"
+      "chi" " {default}游戏开始需要玩家数已被管理员设置为：{1}"
+    }
 
     "ready"
     {
@@ -179,9 +186,9 @@
 
     "hint ready 1"
     {
-      "#format"	"{1:d},{2:d}"
-      "en" " {1} / {2} players are ready.\nGame start needs at least 6 players."
-      "chi" " {1} / {2} 名玩家已准备\n至少需要6名玩家才能开始游戏。"
+      "#format"	"{1:d},{2:d},{3:d}"
+      "en" " {1} / {2} players are ready.\nGame start needs at least {3} players."
+      "chi" " {1} / {2} 名玩家已准备\n至少需要 {3} 名玩家才能开始游戏。"
     }
 
     "hint ready 2"
@@ -341,6 +348,12 @@
     {
       "en" "Change max health"
       "chi" "设置最大血量"
+    }
+
+    "dz ready players"
+    {
+      "en" "Change game start ready players need"
+      "chi" "设置开始游戏所需准备玩家数"
     }
 
     "dz save cfg"
