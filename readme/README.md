@@ -39,6 +39,7 @@ You can modify this plugin, but I wish you don't delete and modify this function
 7. !respawn: Respawn a player (Admin Only)
 8. !give: Give Items (Admin Only)
 9. !savecfg: Save server info (Admin Only)
+10. !dzteam: Join team, only effects when Team Players Count > 1 (Player Command, Sub Plugin Command)
 
 ## Cvars：
 
