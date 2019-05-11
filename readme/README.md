@@ -14,6 +14,8 @@ You can modify this plugin, but I wish you don't delete and modify this function
 2. Fix when 2 players ready game start problem.
 3. add `yk_dzReadyToStartPlayersCount` ConVar to control game start process.
 
+### 3. 2019/5/11: Added `dangerzone_team.sp` sub plugin. (NOTE: this is a pre release.)
+
 ## Functions:
 
 1. Ready System: At least 6 players are ready, the game will start.
