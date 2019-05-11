@@ -180,8 +180,15 @@
     "hint unready"
     {
       "#format"	"{1:d},{2:d}"
-      "en" " {1} / {2} players are ready.\nPlease type <span style='color:green;'>!ready</span> to be ready."
-      "chi" " {1} / {2} 名玩家已准备\n请输入 <span style='color:green;'>!ready</span> 准备。"
+      "en" " {1} / {2} players are ready.\nPlease type !ready to be ready."
+      "chi" " {1} / {2} 名玩家已准备\n请输入 !ready 准备。"
+    }
+
+    "hint unready team"
+    {
+      "#format"	"{1:d},{2:d}"
+      "en" " {1} / {2} players are ready.\nPlease type !ready to be ready, \nType !dzteam to join a team."
+      "chi" " {1} / {2} 名玩家已准备\n请输入 !ready 准备，\n输入 !dzteam 加入队伍。"
     }
 
     "hint ready 1"

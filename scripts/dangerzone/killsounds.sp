@@ -87,13 +87,16 @@ public void YK_PerformanceKillSounds (int attacker, int victim, char[] attackerS
     if (IsClientInGame(client) && IsClientConnected(client) && !IsFakeClient(client)) {
       if (client == victim) {
         FormatEx(buffer, 255, "einzbern/killsounds/lol/jaJP/%s", victimSound);
-        EmitSoundToClient(client, buffer, client, SNDCHAN_AUTO, SNDLEVEL_MINIBIKE, SND_NOFLAGS);
+        // EmitSoundToClient(client, buffer, SOUND_FROM_WORLD, SNDCHAN_AUTO, SNDLEVEL_MINIBIKE, SND_NOFLAGS);
+        EmitSoundToClient(client, buffer);
       } else if (client == attacker) {
         FormatEx(buffer, 255, "einzbern/killsounds/lol/jaJP/%s", attackerSound);
-        EmitSoundToClient(client, buffer, client, SNDCHAN_AUTO, SNDLEVEL_MINIBIKE, SND_NOFLAGS);
+        // EmitSoundToClient(client, buffer, SOUND_FROM_WORLD, SNDCHAN_AUTO, SNDLEVEL_MINIBIKE, SND_NOFLAGS);
+        EmitSoundToClient(client, buffer);
       } else {
         FormatEx(buffer, 255, "einzbern/killsounds/lol/jaJP/%s", othersSound);
-        EmitSoundToClient(client, buffer, client, SNDCHAN_AUTO, SNDLEVEL_MINIBIKE, SND_NOFLAGS);
+        // EmitSoundToClient(client, buffer, SOUND_FROM_WORLD, SNDCHAN_AUTO, SNDLEVEL_MINIBIKE, SND_NOFLAGS);
+        EmitSoundToClient(client, buffer);
       }
     }
   }

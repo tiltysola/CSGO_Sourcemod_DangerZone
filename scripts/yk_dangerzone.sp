@@ -2,6 +2,7 @@
 #include <sdktools>
 #include <cstrike>
 #include "includes/color_Stock.inc"
+#include "dangerzone/dangerzone_teams.sp"
 #include "dangerzone/killsounds.sp"
 
 /*************************************************
@@ -104,7 +105,7 @@ int g_iPlayerKillsCount[65];
 //////////////////////////////
 public void OnPluginStart () {
   YK_InitPlugin();
-  // OnPingPositionStart();
+  OnTeamsPluginStart();
 }
 
 public void OnMapStart () {
@@ -169,6 +170,12 @@ public void ConVarChanged (ConVar convar, const char[] oldValue, const char[] ne
 			g_iMaxTeamCount = 3;
 		else
 			g_iMaxTeamCount = StringToInt(newValue);
+    ServerCommand("sv_dz_team_count %d", g_iMaxTeamCount);
+    if (g_iMaxTeamCount > 1) {
+      for (int client = 1; client <= MaxClients; ++client) {
+        ShowTeamMenu(client);
+      }
+    }
     tPrintToChatAll(" %t %t", "prefix", "teamcount setting", g_iMaxTeamCount);
 	}
 	if (convar == g_hSpawnHealth) {
@@ -316,12 +323,19 @@ public void Event_RoundStarted (Event event, const char[] name, bool dontBroadca
     } else if (g_iGameStartedStatus == 0) {
       ServerCommand("mp_warmuptime 3600");
       ServerCommand("mp_warmup_pausetimer 1");
-      ServerCommand("sv_dz_team_count 1");
+      // ServerCommand("sv_dz_team_count 1");
+      ServerCommand("sv_dz_jointeam_allowed 1");
       ServerCommand("sv_dz_player_max_health 1000");
       ServerCommand("sv_dz_player_spawn_health 1000");
       YK_ActiveReadyTimer();
       YK_ActiveAnnounceTimer();
+      if (g_iMaxTeamCount > 1) {
+        for (int client = 1; client <= MaxClients; ++client) {
+          ShowTeamMenu(client);
+        }
+      }
     } else if (g_iGameStartedStatus == 2) {
+      ServerCommand("sv_dz_jointeam_allowed 0");
       g_iGameStartedStatus = 1;
       g_iFirstBlood = 0;
       for (int client = 1; client <= MaxClients; ++client) {
@@ -460,7 +474,9 @@ public void YK_InitConvars () {
 
 public void YK_InitCommands () {
   RegConsoleCmd("sm_ready", Command_Ready);
+  RegConsoleCmd("sm_r", Command_Ready);
   RegConsoleCmd("sm_unready", Command_Unready);
+  RegConsoleCmd("sm_ur", Command_Unready);
   RegAdminCmd("sm_dzadmin", Command_DzAdmin, ADMFLAG_CHEATS);
   RegAdminCmd("sm_savecfg", Command_SaveCFG, ADMFLAG_CHEATS);
   RegAdminCmd("sm_start", Command_Start, ADMFLAG_CHEATS);
@@ -624,7 +640,11 @@ public Action Timer_ReadyTimer (Handle timer) {
       if (IsClientInGame(client) && IsClientConnected(client) && !IsFakeClient(client)) {
         if (g_iPlayerReadyStatus[client] == 0) {
           char szBuffer[256];
-          FormatEx(szBuffer, 255, "%t", "hint unready", readyPlayersCount, readyPlayersCount + unreadyPlayersCount);
+          if (g_iMaxTeamCount > 1) {
+            FormatEx(szBuffer, 255, "%t", "hint unready team", readyPlayersCount, readyPlayersCount + unreadyPlayersCount);
+          } else {
+            FormatEx(szBuffer, 255, "%t", "hint unready", readyPlayersCount, readyPlayersCount + unreadyPlayersCount);
+          }
           PrintHintText(client, szBuffer);
         } else {
           if (readyPlayersCount + unreadyPlayersCount < g_iReadyToStartPlayersCount){

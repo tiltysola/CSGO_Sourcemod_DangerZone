@@ -1,0 +1,64 @@
+"Phrases"
+{
+    "error select team"
+    {
+      "en" "You cant select team now"
+      "chi" "你现在无法选择队伍了。"
+    }
+
+    "join Survival Team"
+    {
+      "en" "Join Survival Team"
+      "chi" "加入小队"
+    }
+
+    "Blue Team" {
+      "en" "Blue Team"
+      "chi" "①号小队"
+    }
+
+    "Turquoise Team" {
+      "en" "Turquoise Team"
+      "chi" "②号小队"
+    }
+
+    "Banana Team" {
+      "en" "Banana Team"
+      "chi" "③号小队"
+    }
+
+    "Magenta Team" {
+      "en" "Magenta Team"
+      "chi" "④号小队"
+    }
+
+    "Artic Team" {
+      "en" "Artic Team"
+      "chi" "⑤号小队"
+    }
+
+    "Lime Team" {
+      "en" "Lime Team"
+      "chi" "⑥号小队"
+    }
+
+    "Orange Team" {
+      "en" "Orange Team"
+      "chi" "⑦号小队"
+    }
+
+    "Pink Team" {
+      "en" "Pink Team"
+      "chi" "⑧号小队"
+    }
+
+    "Purple Team" {
+      "en" "Purple Team"
+      "chi" "⑨号小队"
+    }
+
+    "White Team" {
+      "en" "White Team"
+      "chi" "⑩号小队"
+    }
+}
