@@ -122,6 +122,7 @@ public void OnClientPutInServer (int client) {
   if (g_iGameStartedStatus == 1) {
     g_iPlayerAliveStatus[client] = 2;
   }
+  YK_BroadcastDangerZoneServerInfo(client);
 }
 
 public void OnClientDisconnect (int client) {
@@ -224,7 +225,25 @@ public Action Command_Ready (int client, int args) {
     if (g_iGameStartedStatus == 0) {
       if (g_iPlayerReadyStatus[client] == 0) {
         g_iPlayerReadyStatus[client] = 1;
-        tPrintToChat(client, " %t %t", "prefix", "ready");
+        // tPrintToChat(client, " %t %t", "prefix", "ready");
+        int readyPlayersCount = 0, unreadyPlayersCount = 0;
+        for (int c = 1; c <= MaxClients; ++c) {
+          if (IsClientInGame(c) && IsClientConnected(c) && !IsFakeClient(c)) {
+            char clientName[255];
+            GetClientName(c, clientName, 255);
+            if (strcmp(clientName, "GOTV") != 0) {
+              if (g_iPlayerReadyStatus[c] == 1) {
+                readyPlayersCount++;
+              } else {
+                unreadyPlayersCount++;
+              }
+            }
+          }
+        }
+        int restPlayersCount = ((g_iReadyToStartPlayersCount - readyPlayersCount) > 0) ? (g_iReadyToStartPlayersCount - readyPlayersCount) : 0;
+        char buffer[255];
+        GetClientName(client, buffer, 255);
+        tPrintToChatAll(" %t %t", "prefix", "ready all", buffer, restPlayersCount);
       } else {
         tPrintToChat(client, " %t %t", "prefix", "retype ready");
       }
@@ -238,7 +257,25 @@ public Action Command_Unready (int client, int args) {
     if (g_iGameStartedStatus == 0) {
       if (g_iPlayerReadyStatus[client] == 1) {
         g_iPlayerReadyStatus[client] = 0;
-        tPrintToChat(client, " %t %t", "prefix", "unready");
+        // tPrintToChat(client, " %t %t", "prefix", "unready");
+        int readyPlayersCount = 0, unreadyPlayersCount = 0;
+        for (int c = 1; c <= MaxClients; ++c) {
+          if (IsClientInGame(c) && IsClientConnected(c) && !IsFakeClient(c)) {
+            char clientName[255];
+            GetClientName(c, clientName, 255);
+            if (strcmp(clientName, "GOTV") != 0) {
+              if (g_iPlayerReadyStatus[c] == 1) {
+                readyPlayersCount++;
+              } else {
+                unreadyPlayersCount++;
+              }
+            }
+          }
+        }
+        int restPlayersCount = ((g_iReadyToStartPlayersCount - readyPlayersCount) > 0) ? (g_iReadyToStartPlayersCount - readyPlayersCount) : 0;
+        char buffer[255];
+        GetClientName(client, buffer, 255);
+        tPrintToChatAll(" %t %t", "prefix", "unready all", buffer, restPlayersCount);
       } else {
         tPrintToChat(client, " %t %t", "prefix", "retype unready");
       }
@@ -324,11 +361,12 @@ public void Event_RoundStarted (Event event, const char[] name, bool dontBroadca
       ServerCommand("mp_warmuptime 3600");
       ServerCommand("mp_warmup_pausetimer 1");
       // ServerCommand("sv_dz_team_count 1");
+      ServerCommand("sv_dz_autojointeam 0");
       ServerCommand("sv_dz_jointeam_allowed 1");
       ServerCommand("sv_dz_player_max_health 1000");
       ServerCommand("sv_dz_player_spawn_health 1000");
       YK_ActiveReadyTimer();
-      YK_ActiveAnnounceTimer();
+      // YK_ActiveAnnounceTimer();
       if (g_iMaxTeamCount > 1) {
         for (int client = 1; client <= MaxClients; ++client) {
           ShowTeamMenu(client);
@@ -533,6 +571,12 @@ public void YK_BroadcastDangerZoneServerInfoToAll () {
   tPrintToChatAll(" %t %t", "prefix", "broadcast max health", g_iMaxHealth);
 }
 
+public void YK_BroadcastDangerZoneServerInfo (int client) {
+  tPrintToChat(client, " %t %t", "prefix", "broadcast team count", g_iMaxTeamCount);
+  tPrintToChat(client, " %t %t", "prefix", "broadcast spawn health", g_iSpawnHealth);
+  tPrintToChat(client, " %t %t", "prefix", "broadcast max health", g_iMaxHealth);
+}
+
 public void YK_MoveAllPlayersInGame () {
 	for (int client = 1; client <= MaxClients; ++client) {
 		if (IsClientInGame(client)) {
@@ -570,7 +614,7 @@ public void YK_EndGame () {
   ServerCommand("mp_warmuptime 3600");
   ServerCommand("mp_warmup_pausetimer 1");
   ServerCommand("mp_warmup_start");
-  ServerCommand("mp_restartgame 1");
+  ServerCommand("mp_restartgame 3");
   if (g_hBroadcastTimer != null)
     KillTimer(g_hBroadcastTimer);
   g_hBroadcastTimer = null;
@@ -594,7 +638,7 @@ public void YK_ActiveReadyTimer () {
   }
 	if (g_hReadyTimer != null)
 		KillTimer(g_hReadyTimer);
-  g_hReadyTimer = CreateTimer(1.0, Timer_ReadyTimer, _, TIMER_REPEAT);
+  g_hReadyTimer = CreateTimer(0.1, Timer_ReadyTimer, _, TIMER_REPEAT);
 }
 
 public void YK_ActiveSpecTimer () {
@@ -624,6 +668,10 @@ public Action Timer_ReadyTimer (Handle timer) {
   if (g_iGameStartedStatus == 0) {
     YK_MoveAllPlayersInGame();
     for (int client = 1; client <= MaxClients; ++client) {
+      // GodMode WarmUp
+      if (IsClientInGame(client)) {
+        SetEntProp(client, Prop_Data, "m_takedamage", 0, 1);
+      }
       if (IsClientInGame(client) && IsClientConnected(client) && !IsFakeClient(client)) {
         char clientName[255];
         GetClientName(client, clientName, 255);

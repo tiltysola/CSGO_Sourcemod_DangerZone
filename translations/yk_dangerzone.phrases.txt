@@ -107,6 +107,13 @@
       "chi" " {default}准备成功，请等待其他玩家准备！"
     }
 
+    "ready all"
+    {
+      "#format"	"{1:s},{2:d}"
+      "en" " {default}Player {olive}{1} {default}is ready now, game will start afer {green}{2} {default}players be ready."
+      "chi" " {default}玩家{olive}{1}{default}已成功准备，距离游戏开始还剩余{green}{2}{default}名玩家准备！"
+    }
+
     "retype ready"
     {
       "en" " {default}You are ready, please type !unready to be unready."
@@ -117,6 +124,13 @@
     {
       "en" " {default}You are not ready now, please be ready soon."
       "chi" " {default}取消准备成功，请尽快重新准备！"
+    }
+
+    "unready all"
+    {
+      "#format"	"{1:s},{2:d}"
+      "en" " {default}Player {olive}{1} {default}is unready now, game will start afer {green}{2} {default}players be ready."
+      "chi" " {default}玩家{olive}{1}{default}已取消准备，距离游戏开始还剩余{green}{2}{default}名玩家准备！"
     }
 
     "retype unready"
