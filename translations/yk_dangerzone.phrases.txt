@@ -160,21 +160,21 @@
     "broadcast team count"
     {
       "#format"	"{1:d}"
-      "en" " {default}Team players count:{1}"
+      "en" " {default}Team players count: {1}"
       "chi" " {default}随机组队队伍成员数：{1}"
     }
 
     "broadcast spawn health"
     {
       "#format"	"{1:d}"
-      "en" " {default}Spawn health after game began:{1}"
+      "en" " {default}Spawn health after game began: {1}"
       "chi" " {default}游戏开始后的初始血量：{1}"
     }
 
     "broadcast max health"
     {
       "#format"	"{1:d}"
-      "en" " {default}Max health after game began:{1}"
+      "en" " {default}Max health after game began: {1}"
       "chi" " {default}游戏开始后的最大血量：{1}"
     }
 
